@@ -1,0 +1,35 @@
+@import '../../../styles/mixins.scss';
+@import '../../../styles/variables.scss';
+
+@mixin basic_button {
+    color: white;
+    border: 0;
+    cursor: pointer;
+    padding: $spacing-sm $spacing-md;
+    font-size: 12px;
+    font-family: $font-family-secondary;
+}
+
+.link_button {
+    @include basic_button;
+    @include link-normalize('white');
+    background-color: $primary-color;
+}
+
+.btn_primary {
+    @include basic_button;
+    background-color: $primary-color;
+
+    &.btn_disabled {
+        @include disabled-button($primary-color);
+    }
+}
+
+.btn_secondary {
+    @include basic_button;
+    background-color: $secondary-color;
+
+    &.btn_disabled {
+        @include disabled-button($secondary-color);
+    }
+}

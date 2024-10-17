@@ -1,0 +1,41 @@
+@import '../styles/variables.scss';
+
+@mixin link-normalize($color: $text-color) {
+    color: $color;
+    text-decoration: none;
+
+    &:hover,
+    &:focus,
+    &:active {
+        text-decoration: none;
+        color: $color;
+    }
+}
+
+@mixin list-normalize {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        margin: 0;
+        padding: 0;
+    }
+}
+
+@mixin responsive($breakpoint) {
+    @media screen and (min-width: $breakpoint) {
+        @content;
+    }
+}
+
+@mixin flex-row-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin disabled-button($bg-color) {
+    cursor: not-allowed;
+    background-color: lighten($bg-color, 20%);
+}

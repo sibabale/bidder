@@ -1,0 +1,60 @@
+@import '../../../styles/variables.scss';
+
+.promo-blob {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-sm;
+    background-color: transparent;
+
+    .promo-header {
+        color: $text-color-light;
+        font-size: 30px;
+        font-weight: bold;
+        font-family: $font-family-primary;
+    }
+
+    .promo-subheader {
+        color: $text-color-light;
+        margin: $spacing-sm 0;
+        font-size: 1.2rem;
+    }
+
+    .promo-reviews {
+        display: flex;
+        align-items: center;
+        margin-top: 1rem;
+
+        .avatars {
+            display: flex;
+            margin-right: 1rem;
+
+            .avatar {
+                width: $spacing-md;
+                height: $spacing-md;
+                border-radius: 50%;
+                margin-right: -10px;
+                border: 2px solid #fff;
+            }
+        }
+
+        .review-info {
+            text-align: left;
+
+            .rating {
+                color: #ffc107;
+                font-size: 12px;
+            }
+
+            .review-count {
+                color: $text-color-light;
+                font-size: 9px;
+                font-family: $font-family-secondary;
+            }
+        }
+    }
+}
+
+.blurry-bg {
+    background-color: #fffbfbb3;
+}

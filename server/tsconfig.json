@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "target": "esnext",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "skipLibCheck": true
+    },
+    "include": ["./*.js", "./api/*.ts", "src/**/*.ts", "test/**/*.ts"]
+}

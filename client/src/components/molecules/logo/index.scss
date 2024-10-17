@@ -1,0 +1,33 @@
+@import '../../../styles/mixins.scss';
+@import '../../../styles/variables.scss';
+
+.logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 100px;
+    background-color: $primary-color;
+}
+
+.logo_container {
+    display: flex;
+    align-items: center;
+    @include link-normalize;
+}
+
+.titles {
+    display: flex;
+    margin-left: 10px;
+    flex-direction: column;
+}
+.app_title {
+    color: $text-color-light;
+    font-weight: bold;
+    font-family: $font-family-primary;
+}
+
+.sub_title {
+    color: $text-color;
+    font-size: 9px;
+    font-weight: thin;
+    font-family: $font-family-primary;
+}

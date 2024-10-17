@@ -1,0 +1,97 @@
+{
+    "INVALID_EMAIL": {
+        "code": "auth/invalid-email",
+        "message": "The email address is badly formatted.",
+        "status": 400
+    },
+    "INVALID_PASSWORD": {
+        "code": "auth/wrong-password",
+        "message": "The password is incorrect.",
+        "status": 401
+    },
+    "USER_NOT_FOUND": {
+        "code": "auth/user-not-found",
+        "message": "There is no user record corresponding to this email.",
+        "status": 404
+    },
+    "EMAIL_ALREADY_IN_USE": {
+        "code": "auth/email-already-in-use",
+        "message": "The email address is already in use by another account.",
+        "status": 409
+    },
+    "WEAK_PASSWORD": {
+        "code": "auth/weak-password",
+        "message": "The password is too weak. Please choose a stronger password.",
+        "status": 400
+    },
+    "OPERATION_NOT_ALLOWED": {
+        "code": "auth/operation-not-allowed",
+        "message": "This operation is not allowed. Please contact support.",
+        "status": 403
+    },
+    "TOO_MANY_ATTEMPTS_TRY_LATER": {
+        "code": "auth/too-many-requests",
+        "message": "Too many unsuccessful login attempts. Please try again later.",
+        "status": 429
+    },
+    "CREDENTIAL_ALREADY_IN_USE": {
+        "code": "auth/credential-already-in-use",
+        "message": "This credential is already associated with another account.",
+        "status": 409
+    },
+    "USER_DISABLED": {
+        "code": "auth/user-disabled",
+        "message": "The user account has been disabled by an administrator.",
+        "status": 403
+    },
+    "REQUIRES_RECENT_LOGIN": {
+        "code": "auth/requires-recent-login",
+        "message": "Please re-authenticate before performing this operation.",
+        "status": 401
+    },
+    "NETWORK_REQUEST_FAILED": {
+        "code": "auth/network-request-failed",
+        "message": "A network error occurred. Please check your connection.",
+        "status": 503
+    },
+    "UNVERIFIED_EMAIL": {
+        "code": "auth/unverified-email",
+        "message": "Your email address has not been verified. Please check your inbox.",
+        "status": 403
+    },
+    "CAPTCHA_CHECK_FAILED": {
+        "code": "auth/captcha-check-failed",
+        "message": "CAPTCHA verification failed. Please try again.",
+        "status": 400
+    },
+    "INVALID_OAUTH_PROVIDER": {
+        "code": "auth/invalid-oauth-provider",
+        "message": "The OAuth provider is not valid.",
+        "status": 400
+    },
+    "INVALID_API_KEY": {
+        "code": "auth/invalid-api-key",
+        "message": "The API key is invalid. Please check your configuration.",
+        "status": 401
+    },
+    "TOKEN_EXPIRED": {
+        "code": "auth/user-token-expired",
+        "message": "The user session has expired. Please sign in again.",
+        "status": 401
+    },
+    "POPUP_BLOCKED": {
+        "code": "auth/popup-blocked",
+        "message": "The popup was blocked. Please allow popups for this site.",
+        "status": 400
+    },
+    "REJECTED_CREDENTIAL": {
+        "code": "auth/rejected-credential",
+        "message": "The credential has been rejected by the server.",
+        "status": 401
+    },
+    "INVALID_CREDENTIAL": {
+        "code": "auth/invalid-credential",
+        "message": "The provided credentials are invalid.",
+        "status": 400
+    }
+}

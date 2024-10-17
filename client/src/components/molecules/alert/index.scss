@@ -1,0 +1,13 @@
+@import '../../../styles/variables.scss';
+
+.error_message {
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    margin: $spacing-sm 0;
+    padding: $spacing-sm;
+    position: relative;
+    font-size: 12px;
+    font-family: $font-family-secondary;
+    border-radius: 4px;
+    background-color: #f8d7da;
+}
