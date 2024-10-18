@@ -4,6 +4,8 @@ import useAxios from '../../../hooks/useAxios';
 import Loader from '../../molecules/loader';
 import { Auction } from '../../../types';
 import Alert from '../../molecules/alert';
+import AddIcon from '../../atoms/icons/add';
+import MinusIcon from '../../atoms/icons/minus';
 
 const ArtSalePage = () => {
     const { id } = useParams<{ id: string }>();
@@ -50,7 +52,7 @@ const ArtSalePage = () => {
 
     return (
         <div className="p-3 md:p-5 flex flex-col md:flex-row">
-            <div className="flex justify-center items-center md:w-1/2 lg:w-2/3 xl:w-4/5">
+            <div className="flex justify-center items-center md:w-1/2 lg:w-2/3 xl:w-4/5 bg-gray-100">
                 <div
                     style={{ backgroundImage: `url(${auction.image})` }}
                     className="bg-cover bg-center w-full max-w-[656px] h-[427px] md:h-[624px] max-h-[624px] min-h-[200px]" // Ensure the image is visible on small devices
@@ -59,27 +61,27 @@ const ArtSalePage = () => {
 
             <div className="md:pl-5 md:w-1/2 lg:w-1/3">
                 <div className="my-5 md:mt-0">
-                    <h1 className="text-2xl font-bold">{auction.title}</h1>
-                    <h1 className="text-3xl font-bold text-gray-700">Choose Your Weapon</h1>
+                    <h1 className="text-3xl font-bold">{auction.title}</h1>
+                    <h1 className="text-2xl font-bold text-secondary">Choose Your Weapon</h1>
 
                     <div className="mt-5">
-                        <span className="mr-2">Current Bid:</span>
-                        <span className="mt-3 text-xl font-semibold">R{auction.startPrice}</span>
+                        <small className="mr-2 text-secondary">Current Bid:</small>
+                        <h3 className="mt-3 text-2xl font-semibold">R{auction.startPrice}</h3>
                     </div>
-                    <div className="mt-5">
-                        <span className="mr-2">Starting Price:</span>
-                        <span className="mt-3 text-md font-semibold">R{auction.startPrice}</span>
+                    <div className="mt-5 ">
+                        <div className="flex items-center">
+                            <span className="material-symbols-sharp text-red-500 mr-1">timer</span>
+                            <small className="mr-2 text-red-500">Time remaining</small>
+                        </div>
+                        <h5 className="mt-3 text-md font-semibold text-red-500">01:00:00</h5>
                     </div>
                 </div>
                 <div className="w-full">
                     <div className="my-5 w-full lg:w-1/2 flex items-center justify-between">
-                        <button className="border border-black rounded-full h-10 w-10 flex items-center justify-center cursor-pointer">
-                            <span className="material-symbols-sharp">add</span>
-                        </button>
-                        <span className="mx-3 text-md font-semibold">R{auction.startPrice}</span>
-                        <button className="border border-black rounded-full h-10 w-10 flex items-center justify-center cursor-pointer">
-                            <span className="material-symbols-sharp">remove</span>
-                        </button>
+                        <MinusIcon fill="black" />
+
+                        <span className="mx-3 text-xl font-semibold">R{auction.startPrice}</span>
+                        <AddIcon fill="black" />
                     </div>
 
                     <button className="w-full lg:w-1/2 bg-black text-white px-6 py-3 hover:bg-gray-800">

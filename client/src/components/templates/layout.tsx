@@ -1,4 +1,3 @@
-// import './index.scss';
 import Header from '../molecules/header';
 import { Outlet } from 'react-router-dom';
 import { ReactNode } from 'react';
