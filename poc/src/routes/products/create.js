@@ -1,11 +1,9 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { collection, addDoc, query, where, getDocs } = require('firebase/firestore');
-const db = require('../../firebase-config');
-
+const db = require('../../../firebase-config');
 
 const router = express.Router();
-
 
 // Handle HTTP POST request to upload a product
 router.post(
@@ -17,6 +15,8 @@ router.post(
     body('description').notEmpty().withMessage('Description is required'),
     body('incrementPrice').isFloat({ gt: 0 }).withMessage('Increment price must be a positive number'),
     body('image').isURL().withMessage('Image must be a valid URL'),
+    body('startTime').isISO8601().toDate().withMessage('Invalid start time'),
+    body('endTime').isISO8601().toDate().withMessage('Invalid end time'),
   ],
   async (req, res) => {
     const errors = validationResult(req); // Check for validation errors
@@ -24,9 +24,34 @@ router.post(
       return res.status(400).json({ errors: errors.array() }); // Send errors back to the user
     }
 
-    const { title, userId, startPrice, description, incrementPrice, image } = req.body;
+    const { 
+      title, 
+      userId, 
+      startPrice, 
+      description, 
+      incrementPrice, 
+      image, 
+      startTime, 
+      endTime 
+    } = req.body;
 
     try {
+      // Validate that endTime is after startTime
+      if (endTime <= startTime) {
+        return res.status(400).json({ message: 'End time must be after start time' });
+      }
+
+      // Determine product status based on current time
+      const now = new Date();
+      let status;
+      if (now < startTime) {
+        status = 'coming_soon';
+      } else if (now >= startTime && now <= endTime) {
+        status = 'live';
+      } else {
+        status = 'closed';
+      }
+
       // Check if the user already has a product with the same title
       const productsQuery = query(
         collection(db, 'products'),
@@ -47,12 +72,18 @@ router.post(
         description,
         incrementPrice: parseFloat(incrementPrice),
         image,
+        startTime,
+        endTime,
+        status,
         timestamp: new Date(),
       };
 
       const productRef = await addDoc(collection(db, 'products'), newProduct);
 
-      res.status(201).json({ message: 'Product uploaded successfully', productId: productRef.id });
+      res.status(201).json({ 
+        message: 'Product uploaded successfully', 
+        productId: productRef.id 
+      });
     } catch (error) {
       console.error('Error uploading product:', error);
       res.status(500).json({ message: 'Failed to upload product' });
@@ -60,5 +91,4 @@ router.post(
   }
 );
 
-
-module.exports = router; 
+module.exports = router;

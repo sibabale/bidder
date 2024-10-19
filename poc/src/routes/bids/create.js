@@ -1,7 +1,6 @@
-
 const express = require('express');
-const { collection, doc, getDoc, runTransaction } = require('firebase/firestore');
-const db = require('../../firebase-config'); 
+const { collection, doc, getDoc, arrayUnion, runTransaction } = require('firebase/firestore');
+const db = require('../../../firebase-config'); 
 const rateLimit = require('express-rate-limit');
 const validator = require('validator');
 
@@ -22,20 +21,40 @@ router.post('/', bidLimiter, async (req, res) => {
     if (!productId || !userId || !amount) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    if (!validator.isLength(productId, {min: 1}) || !validator.isUUID(userId)) {
+    if (!validator.isLength(productId, { min: 1 }) || !validator.isUUID(userId)) {
       return res.status(400).json({ message: 'Invalid product or user ID format' });
     }
     if (typeof amount !== 'number' || amount <= 0) {
       return res.status(400).json({ message: 'Amount must be a positive number' });
     }
 
-    // Check product existence and fetch its start price
+    // Check product existence and fetch its details
     const productRef = doc(db, 'products', productId);
     const productSnap = await getDoc(productRef);
     if (!productSnap.exists()) {
       return res.status(404).json({ message: 'Product not found' });
     }
     const productData = productSnap.data();
+
+    // Check if the product is live and within the bidding time
+    const now = new Date();
+    const startTime = new Date(productData.startTime);
+    const endTime = new Date(productData.endTime);
+
+    // Block bidding on certain product statuses
+    if (['cancelled', 'closed', 'coming soon'].includes(productData.status)) {
+      return res.status(400).json({ message: `Bidding is not allowed on ${productData.status} products.` });
+    }
+
+    // Additional time checks
+    if (now < startTime) {
+      return res.status(400).json({ message: 'Bidding is not allowed before the start time.' });
+    }
+    if (now > endTime) {
+      return res.status(400).json({ message: 'Bidding has ended for this product.' });
+    }
+
+    // Check if the bid amount is greater than the start price
     if (amount <= productData.startPrice) {
       return res.status(400).json({ message: 'Bid amount must be greater than the starting price' });
     }
@@ -52,7 +71,7 @@ router.post('/', bidLimiter, async (req, res) => {
 
       // Update the product document with the new bid ID
       transaction.update(productRef, {
-        bids: firebase.firestore.FieldValue.arrayUnion(bidRef.id),
+        bids: arrayUnion(bidRef.id),
       });
 
       // Update highest bid amount if the new bid is greater than the current highest bid amount
