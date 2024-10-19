@@ -55,7 +55,7 @@ const ArtSalePage = () => {
             <div className="flex justify-center items-center md:w-1/2 lg:w-2/3 xl:w-4/5 bg-gray-100">
                 <div
                     style={{ backgroundImage: `url(${auction.image})` }}
-                    className="bg-cover bg-center w-full max-w-[656px] h-[427px] md:h-[624px] max-h-[624px] min-h-[200px]" // Ensure the image is visible on small devices
+                    className="bg-cover bg-center w-full max-w-[656px] h-[427px] md:h-[624px] max-h-[624px] min-h-[200px]"
                 />
             </div>
 

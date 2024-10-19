@@ -1,11 +1,13 @@
 const express = require('express');
-const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
-const admin = require('../../config/firebase-admin'); // Import admin auth
 const { validationResult, body } = require('express-validator');
+const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
+
+const admin = require('../../config/firebase-admin');
 const router = express.Router();
+const verifyToken = require('../../middleware/auth/verifyToken');
 
 // Handle user login
-router.post('/', [
+router.post('/', verifyToken, [
     body('email').isEmail().withMessage('Please provide a valid email address.'),
     body('password').notEmpty().withMessage('Password is required.'),
 ], async (req, res) => {

@@ -2,11 +2,10 @@ const express = require('express');
 const { doc, getDoc } = require('firebase/firestore');
 
 const db = require('../../../firebase-config');
-
 const router = express.Router();
+const verifyToken = require('../../middleware/auth/verifyToken');
 
-// GET /api/products/:productId
-router.get('/:productId', async (req, res) => {
+router.get('/:productId', verifyToken, async (req, res) => {
   const { productId } = req.params;
 
   try {

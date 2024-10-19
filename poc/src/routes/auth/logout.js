@@ -1,17 +1,13 @@
 const express = require('express');
-const admin = require('../../config/firebase-admin'); // Import your admin auth configuration
+const admin = require('../../config/firebase-admin'); 
 const router = express.Router();
 
-// Handle user sign out
 router.post('/', async (req, res) => {
     const firebaseToken = req.headers.authorization?.split('Bearer ')[1];
     
     try {
         // Verify the token to ensure the user is authenticated
         const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
-
-        console.log(decodedToken);
-        
 
         // Clear custom claims
         await admin.auth().setCustomUserClaims(decodedToken.uid, null);

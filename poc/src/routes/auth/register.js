@@ -1,27 +1,26 @@
+const admin = require('firebase-admin');
 const express = require('express');
-const { getAuth, createUserWithEmailAndPassword, sendEmailVerification } = require('firebase/auth');
+const rateLimit = require('express-rate-limit');
 const { doc, setDoc } = require('firebase/firestore');
 const { body, validationResult } = require('express-validator');
-const rateLimit = require('express-rate-limit');
-const db = require('../../../firebase-config');
-const admin = require('firebase-admin'); // Ensure admin SDK is imported and initialized
-const router = express.Router();
+const { getAuth, createUserWithEmailAndPassword } = require('firebase/auth');
 
-// Rate limiter configuration
+const db = require('../../../firebase-config');
+const router = express.Router();
+const verifyToken = require('../../middleware/auth/verifyToken');
+
 const registerLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // Limit each IP to 5 registrations per windowMs
     message: 'Too many registrations from this IP, please try again later.',
 });
 
-// Password validation regex
 const isValidPassword = (password) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
     return regex.test(password);
 };
 
-// Handle user registration
-router.post('/', registerLimiter, [
+router.post('/', registerLimiter, verifyToken, [
     body('email').isEmail().withMessage('Please provide a valid email address.'),
     body('firstName').notEmpty().withMessage('First name is required.'),
     body('lastName').notEmpty().withMessage('Last name is required.'),
@@ -63,7 +62,7 @@ router.post('/', registerLimiter, [
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${firebaseToken}`, // Ensure firebaseToken is defined
+                'Authorization': `Bearer ${firebaseToken}`,
             },
             body: JSON.stringify({ uid: user.uid }),
         });

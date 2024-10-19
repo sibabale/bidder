@@ -1,10 +1,12 @@
 const express = require('express');
 const { collection, getDocs } = require('firebase/firestore');
+
 const db = require('../../../firebase-config'); 
+const verifyToken = require('../../middleware/auth/verifyToken');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
   try {
     const productsCollection = collection(db, 'products');
     const productsSnapshot = await getDocs(productsCollection); 

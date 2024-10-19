@@ -1,24 +1,26 @@
 const express = require('express');
-const { collection, doc, getDoc, arrayUnion, runTransaction } = require('firebase/firestore');
-const db = require('../../../firebase-config'); 
-const rateLimit = require('express-rate-limit');
 const validator = require('validator');
+const { collection, doc, getDoc, arrayUnion, runTransaction } = require('firebase/firestore');
+const rateLimit = require('express-rate-limit');
 
+const db = require('../../../firebase-config'); 
 const router = express.Router();
+const verifyToken = require('../../middleware/auth/verifyToken'); 
 
-// Rate limiting middleware
 const bidLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 5, // Limit each IP to 5 bids per window
 });
 
-// Handle HTTP POST request to place a bid
-router.post('/', bidLimiter, async (req, res) => {
+
+
+router.post('/', bidLimiter, verifyToken, async (req, res) => {
   try {
-    const { productId, userId, amount } = req.body;
+    const { productId, amount } = req.body;
+    const userId = req.userId;
 
     // Input validation
-    if (!productId || !userId || !amount) {
+    if (!productId || !amount) {
       return res.status(400).json({ message: 'All fields are required' });
     }
     if (!validator.isLength(productId, { min: 1 }) || !validator.isUUID(userId)) {

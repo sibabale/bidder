@@ -1,13 +1,15 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { collection, addDoc, query, where, getDocs } = require('firebase/firestore');
+
+
 const db = require('../../../firebase-config');
-
 const router = express.Router();
+const verifyToken = require('../../middleware/auth/verifyToken');
 
-// Handle HTTP POST request to upload a product
 router.post(
   '/',
+  verifyToken,
   [
     body('title').notEmpty().withMessage('Title is required'),
     body('userId').isUUID().withMessage('Invalid user ID format'),
@@ -21,7 +23,7 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req); // Check for validation errors
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() }); // Send errors back to the user
+      return res.status(400).json({ errors: errors.array() });
     }
 
     const { 
