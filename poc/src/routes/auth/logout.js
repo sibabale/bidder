@@ -1,4 +1,5 @@
 const express = require('express');
+
 const admin = require('../../config/firebase-admin'); 
 const router = express.Router();
 
@@ -9,10 +10,9 @@ router.post('/', async (req, res) => {
         // Verify the token to ensure the user is authenticated
         const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
 
-        // Clear custom claims
-        await admin.auth().setCustomUserClaims(decodedToken.uid, null);
+        // Revoke refresh tokens to log out the user from all sessions
+        await admin.auth().revokeRefreshTokens(decodedToken.uid);
 
-        // Return success response
         res.status(200).json({ message: 'Sign out successful' });
     } catch (error) {
         console.error('Error signing out user:', error);

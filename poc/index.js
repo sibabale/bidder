@@ -16,7 +16,6 @@ const createBid = require('./src/routes/bids/create');
 const createProduct = require('./src/routes/products/create');
 const getOneProduct = require('./src/routes/products/getOne');
 const getAllProducts = require('./src/routes/products/getAll');
-const setCustomClaims = require('./src/routes/auth/setCustomClaims');
 
 const app = express();
 const server = http.createServer(app);
@@ -44,7 +43,6 @@ app.use('/api/login', login);
 app.use('/api/logout', logout);
 app.use('/api/register', register);
 
-app.use('/api/set-custom-claims', setCustomClaims);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {

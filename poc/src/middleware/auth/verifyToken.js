@@ -8,11 +8,16 @@ const verifyToken = async (req, res, next) => {
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
-    const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+
+    // Current time in seconds
+    const currentTime = Math.floor(Date.now() / 1000); 
 
     // Check if the token is expired
     if (decodedToken.exp < currentTime) {
-      return res.status(401).json({ message: 'Token has expired' });
+      // Log the user out by revoking refresh tokens
+      await admin.auth().revokeRefreshTokens(decodedToken.uid);
+
+      return res.status(401).json({ message: 'Token has expired. User has been logged out.' });
     }
 
     req.userId = decodedToken.uid; // Attach user ID to request
