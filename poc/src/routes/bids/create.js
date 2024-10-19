@@ -23,7 +23,7 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
     if (!productId || !amount) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    if (!validator.isLength(productId, { min: 1 }) || !validator.isUUID(userId)) {
+    if (!validator.isLength(productId, { min: 1 }) || !validator.isLength(productId, { min: 1 })) {
       return res.status(400).json({ message: 'Invalid product or user ID format' });
     }
     if (typeof amount !== 'number' || amount <= 0) {
