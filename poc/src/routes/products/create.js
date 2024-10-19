@@ -1,8 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { collection, addDoc, query, where, getDocs } = require('firebase/firestore');
-
-
 const db = require('../../../firebase-config');
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
@@ -11,17 +9,17 @@ router.post(
   '/',
   verifyToken,
   [
+    body('image').isURL().withMessage('Image must be a valid URL'),
     body('title').notEmpty().withMessage('Title is required'),
-    body('userId').isUUID().withMessage('Invalid user ID format'),
+    body('userId').isLength({ min: 28, max: 28 }).withMessage('Invalid user ID format'), // Adjusted for non-UUID IDs
+    body('endTime').isISO8601().toDate().withMessage('Invalid end time'),
+    body('startTime').isISO8601().toDate().withMessage('Invalid start time'),
     body('startPrice').isFloat({ gt: 0 }).withMessage('Start price must be a positive number'),
     body('description').notEmpty().withMessage('Description is required'),
     body('incrementPrice').isFloat({ gt: 0 }).withMessage('Increment price must be a positive number'),
-    body('image').isURL().withMessage('Image must be a valid URL'),
-    body('startTime').isISO8601().toDate().withMessage('Invalid start time'),
-    body('endTime').isISO8601().toDate().withMessage('Invalid end time'),
   ],
   async (req, res) => {
-    const errors = validationResult(req); // Check for validation errors
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
@@ -43,15 +41,12 @@ router.post(
         return res.status(400).json({ message: 'End time must be after start time' });
       }
 
-      // Determine product status based on current time
-      const now = new Date();
-      let status;
-      if (now < startTime) {
-        status = 'coming_soon';
-      } else if (now >= startTime && now <= endTime) {
-        status = 'live';
-      } else {
-        status = 'closed';
+      // Check if user exists
+      const userQuery = query(collection(db, 'users'), where('userId', '==', userId));
+      const userSnapshot = await getDocs(userQuery);
+
+      if (userSnapshot.empty) {
+        return res.status(404).json({ message: 'User does not exist' });
       }
 
       // Check if the user already has a product with the same title
@@ -64,6 +59,17 @@ router.post(
 
       if (!querySnapshot.empty) {
         return res.status(400).json({ message: 'You already have a product with this title' });
+      }
+
+      // Determine product status based on the current time
+      const now = new Date();
+      let status;
+      if (now < startTime) {
+        status = 'coming_soon';
+      } else if (now >= startTime && now <= endTime) {
+        status = 'live';
+      } else {
+        status = 'closed';
       }
 
       // Save product to Firestore
