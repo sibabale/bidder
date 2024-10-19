@@ -1,6 +1,15 @@
+const { 
+  doc, 
+  where,
+  query,
+  getDoc,
+  addDoc, 
+  getDocs, 
+  collection,
+} = require('firebase/firestore');
 const express = require('express');
 const { body, validationResult } = require('express-validator');
-const { collection, addDoc, query, where, getDocs } = require('firebase/firestore');
+
 const db = require('../../../firebase-config');
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
@@ -25,14 +34,14 @@ router.post(
     }
 
     const { 
+      image, 
       title, 
       userId, 
+      endTime,
+      startTime, 
       startPrice, 
       description, 
       incrementPrice, 
-      image, 
-      startTime, 
-      endTime 
     } = req.body;
 
     try {
@@ -41,13 +50,13 @@ router.post(
         return res.status(400).json({ message: 'End time must be after start time' });
       }
 
-      // Check if user exists
-      const userQuery = query(collection(db, 'users'), where('userId', '==', userId));
-      const userSnapshot = await getDocs(userQuery);
-
-      if (userSnapshot.empty) {
-        return res.status(404).json({ message: 'User does not exist' });
-      }
+        // Check if the user exists by querying the document by ID
+        const userDocRef = doc(collection(db, 'users'), userId);
+        const userDoc = await getDoc(userDocRef);
+  
+        if (!userDoc.exists()) {
+          return res.status(404).json({ message: 'User does not exist' });
+        }
 
       // Check if the user already has a product with the same title
       const productsQuery = query(
