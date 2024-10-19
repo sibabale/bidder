@@ -6,11 +6,13 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 const login = require('./src/routes/auth/login'); 
+const logout = require('./src/routes/auth/logout'); 
 const register = require('./src/routes/auth/register'); 
 const createBid = require('./src/routes/bids/create'); 
 const createProduct = require('./src/routes/products/create'); 
 const getOneProduct = require('./src/routes/products/getOne'); 
 const getAllProducts = require('./src/routes/products/getAll'); 
+const setCustomClaims = require('./src/routes/auth/setCustomClaims'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -33,7 +35,11 @@ app.use((req, res, next) => {
 
   // Use the auth router
   app.use('/api/login', login);
+  app.use('/api/logout', logout);
   app.use('/api/register', register);
+
+  // Use the setClaims router
+  app.use('/api/setCustomClaims', setCustomClaims);
   
 
 // WebSocket connection handling
