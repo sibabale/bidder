@@ -1,46 +1,50 @@
 require('dotenv').config();
-require('./src/products/update');
+require('./src/crons/products/update');
 
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 
-const login = require('./src/routes/auth/login'); 
-const logout = require('./src/routes/auth/logout'); 
-const register = require('./src/routes/auth/register'); 
-const createBid = require('./src/routes/bids/create'); 
-const createProduct = require('./src/routes/products/create'); 
-const getOneProduct = require('./src/routes/products/getOne'); 
-const getAllProducts = require('./src/routes/products/getAll'); 
-const setCustomClaims = require('./src/routes/auth/setCustomClaims'); 
+const morgan = require('./src/middleware/morgan');
+const corsMiddleware = require('./src/middleware/cors');
+const helmetMiddleware = require('./src/middleware/helmet');
+
+const login = require('./src/routes/auth/login');
+const logout = require('./src/routes/auth/logout');
+const register = require('./src/routes/auth/register');
+const createBid = require('./src/routes/bids/create');
+const createProduct = require('./src/routes/products/create');
+const getOneProduct = require('./src/routes/products/getOne');
+const getAllProducts = require('./src/routes/products/getAll');
+const setCustomClaims = require('./src/routes/auth/setCustomClaims');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(express.json());
+app.use(morgan); // Use Logger middleware
+app.use(corsMiddleware); // Use CORS middleware
+app.use(helmetMiddleware); // Use Helmet middleware
 
+// Middleware to make io accessible in routes
 app.use((req, res, next) => {
-    req.io = io; // Make io accessible in routes
+    req.io = io;
     next();
-  });
-  
-  // Use the bids router
-  app.use('/api/bids', createBid);
+});
 
-  // Use the products router
-  app.use('/api/products', createProduct);
-  app.use('/api/products', getOneProduct);
-  app.use('/api/products', getAllProducts);
+// Use routers
+app.use('/api/bids', createBid);
 
-  // Use the auth router
-  app.use('/api/login', login);
-  app.use('/api/logout', logout);
-  app.use('/api/register', register);
+app.use('/api/products', createProduct);
+app.use('/api/products', getOneProduct);
+app.use('/api/products', getAllProducts);
 
-  // Use the setClaims router
-  app.use('/api/set-custom-claims', setCustomClaims);
-  
+app.use('/api/login', login);
+app.use('/api/logout', logout);
+app.use('/api/register', register);
+
+app.use('/api/set-custom-claims', setCustomClaims);
 
 // WebSocket connection handling
 io.on('connection', (socket) => {

@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { collection, getDocs, doc, updateDoc } = require('firebase/firestore');
-const db = require('../../firebase-config'); 
+const db = require('../../../firebase-config'); 
 
 // Function to update product statuses
 const updateProductStatuses = async () => {
