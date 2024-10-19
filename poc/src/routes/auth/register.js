@@ -7,7 +7,6 @@ const { getAuth, createUserWithEmailAndPassword } = require('firebase/auth');
 
 const db = require('../../../firebase-config');
 const router = express.Router();
-const verifyToken = require('../../middleware/auth/verifyToken');
 
 const registerLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -20,7 +19,7 @@ const isValidPassword = (password) => {
     return regex.test(password);
 };
 
-router.post('/', registerLimiter, verifyToken, [
+router.post('/', registerLimiter, [
     body('email').isEmail().withMessage('Please provide a valid email address.'),
     body('firstName').notEmpty().withMessage('First name is required.'),
     body('lastName').notEmpty().withMessage('Last name is required.'),
@@ -41,8 +40,9 @@ router.post('/', registerLimiter, verifyToken, [
     try {
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
+        
         const user = userCredential.user;
+        const firebaseToken = await user.getIdToken();
 
         if (!user.uid) {
             throw new Error('User ID is not available');
@@ -86,7 +86,7 @@ router.post('/', registerLimiter, verifyToken, [
             lastSignInTime,
         });
 
-        res.status(201).json({ message: 'User registered successfully', userId: uid });
+        res.status(201).json({ message: 'User registered successfully', userId: uid, firebaseToken });
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Failed to register user', error: error.message });
