@@ -39,7 +39,7 @@ app.use((req, res, next) => {
   app.use('/api/register', register);
 
   // Use the setClaims router
-  app.use('/api/setCustomClaims', setCustomClaims);
+  app.use('/api/set-custom-claims', setCustomClaims);
   
 
 // WebSocket connection handling
