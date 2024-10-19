@@ -4,6 +4,7 @@ const { doc, setDoc } = require('firebase/firestore');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const db = require('../../../firebase-config');
+const admin = require('firebase-admin'); // Ensure admin SDK is imported and initialized
 const router = express.Router();
 
 // Rate limiter configuration
@@ -48,6 +49,29 @@ router.post('/', registerLimiter, [
             throw new Error('User ID is not available');
         }
 
+        // Fetch the user's custom claims using the Admin SDK
+        const userRecord = await admin.auth().getUser(user.uid);
+        const customClaims = userRecord.customClaims || {};
+
+        // Check for already logged in users (you may implement a mechanism to track active sessions if needed)
+        if (customClaims.isLoggedIn) {
+            return res.status(403).json({ message: 'User is already logged in from another device.' });
+        }
+
+        // If everything is fine, set custom claims if needed
+        const response = await fetch(`${req.protocol}://${req.get('host')}/api/set-custom-claims`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${firebaseToken}`, // Ensure firebaseToken is defined
+            },
+            body: JSON.stringify({ uid: user.uid }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to set custom claims.');
+        }
+
         const { uid, metadata } = user;
         const { creationTime, lastSignInTime } = metadata;
 
@@ -62,7 +86,6 @@ router.post('/', registerLimiter, [
             emailVerified: false,
             lastSignInTime,
         });
-
 
         res.status(201).json({ message: 'User registered successfully', userId: uid });
     } catch (error) {
