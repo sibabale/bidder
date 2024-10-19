@@ -1,9 +1,16 @@
 require('dotenv').config();
+require('./src/products/update');
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const createBid = require('./routes/bids/create'); 
-const createProduct = require('./routes/products/create'); 
+
+const login = require('./src/routes/auth/login'); 
+const register = require('./src/routes/auth/register'); 
+const createBid = require('./src/routes/bids/create'); 
+const createProduct = require('./src/routes/products/create'); 
+const getOneProduct = require('./src/routes/products/getOne'); 
+const getAllProducts = require('./src/routes/products/getAll'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -18,7 +25,15 @@ app.use((req, res, next) => {
   
   // Use the bids router
   app.use('/api/bids', createBid);
+
+  // Use the products router
   app.use('/api/products', createProduct);
+  app.use('/api/products', getOneProduct);
+  app.use('/api/products', getAllProducts);
+
+  // Use the auth router
+  app.use('/api/login', login);
+  app.use('/api/register', register);
   
 
 // WebSocket connection handling
