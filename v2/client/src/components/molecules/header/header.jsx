@@ -39,7 +39,7 @@ export default function Header() {
                         asChild
                         className="hidden md:block bg-primary text-white px-4 py-2"
                     >
-                        <Link href="/sell">Sell</Link>
+                        <Link href="/auctions/create">Sell</Link>
                     </Button>
 
                     <div className="md:hidden ">
@@ -68,7 +68,7 @@ export default function Header() {
                             Insights
                         </span>
                     </Link>
-                    <Link href="/sell">
+                    <Link href="/auctions/create">
                         <span className="block bg-primary text-white px-4 py-2 text-center">
                             Sell
                         </span>
