@@ -1,10 +1,11 @@
 'use client'
 
+import TimerIcon from '../../../components/atoms/icons/timer'
 import { Button } from '../../../components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
-
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import numeral from 'numeral' // Import numeral.js
 
 export default function DetailsPage({ params }) {
     const [error, setError] = useState(null)
@@ -13,6 +14,7 @@ export default function DetailsPage({ params }) {
     const [activeTab, setActiveTab] = useState('description')
 
     const { id } = params
+
     useEffect(() => {
         const fetchProduct = async () => {
             if (!id) return
@@ -49,6 +51,89 @@ export default function DetailsPage({ params }) {
     if (error) return <p className="text-center text-red-500 mt-10">{error}</p>
 
     if (!product) return null
+
+    const calculateRemainingTime = (endTime) => {
+        const now = new Date()
+        const end = new Date(endTime)
+        const remaining = end - now
+
+        if (remaining < 0) {
+            return { days: 0, hours: 0, minutes: 0, seconds: 0 }
+        }
+
+        const seconds = Math.floor((remaining / 1000) % 60)
+        const minutes = Math.floor((remaining / 1000 / 60) % 60)
+        const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24)
+        const days = Math.floor(remaining / (1000 * 60 * 60 * 24))
+
+        return { days, hours, minutes, seconds }
+    }
+
+    const CountdownTimer = ({ endTime }) => {
+        const [timeLeft, setTimeLeft] = useState(
+            calculateRemainingTime(endTime)
+        )
+
+        useEffect(() => {
+            const timerId = setInterval(() => {
+                setTimeLeft(calculateRemainingTime(endTime))
+            }, 1000)
+
+            return () => clearInterval(timerId)
+        }, [endTime])
+
+        if (
+            timeLeft.days === 0 &&
+            timeLeft.hours === 0 &&
+            timeLeft.minutes === 0 &&
+            timeLeft.seconds === 0
+        ) {
+            return <p className="text-red-600">Time is up!</p>
+        }
+
+        return (
+            <div className="mt-5">
+                <div className="flex items-center">
+                    <TimerIcon />
+                    <span className="ml-2 text-red-600">Time remaining:</span>
+                </div>
+                <div className="flex space-x-4 mt-2">
+                    {timeLeft.days > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-bold">
+                                {timeLeft.days}
+                            </span>
+                            <span className="text-sm text-gray-500">Days</span>
+                        </div>
+                    )}
+                    {timeLeft.hours > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-bold">
+                                {timeLeft.hours}
+                            </span>
+                            <span className="text-sm text-gray-500">Hours</span>
+                        </div>
+                    )}
+                    {timeLeft.minutes > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-bold">
+                                {timeLeft.minutes}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                Minutes
+                            </span>
+                        </div>
+                    )}
+                    <div className="flex flex-col items-center">
+                        <span className="text-lg font-bold">
+                            {timeLeft.seconds}
+                        </span>
+                        <span className="text-sm text-gray-500">Seconds</span>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="max-w-7xl mx-auto p-4">
@@ -94,8 +179,9 @@ export default function DetailsPage({ params }) {
 
                     <div className="mt-6">
                         <small className="text-gray-500">Starting bid</small>
-                        <p className="text-2xl md:text-3xl lg:text-4xl text-black font-bold mt-1">
-                            R{product.startPrice}
+                        <p className="text-2xl md:text-3xl lg:text-2xl text-black font-bold mt-1">
+                            R{numeral(product.startPrice).format('R0,0.00')}{' '}
+                            {/* Format with numeral */}
                         </p>
                     </div>
 
@@ -105,7 +191,8 @@ export default function DetailsPage({ params }) {
                                 -
                             </button>
                             <p className="text-lg md:text-xl lg:text-2xl">
-                                R{product.startPrice}
+                                R{numeral(product.startPrice).format('R0,0.00')}{' '}
+                                {/* Format with numeral */}
                             </p>
                             <button className="text-2xl border h-10 w-10 rounded-full">
                                 +
@@ -114,6 +201,10 @@ export default function DetailsPage({ params }) {
                     )}
 
                     {product.status !== 'live' && <hr className="mt-5" />}
+
+                    {product.endTime && (
+                        <CountdownTimer endTime={product.endTime} />
+                    )}
 
                     {product.status === 'live' && (
                         <Button className="mt-6 w-full bg-bidder-primary cursor-pointer text-white py-3 hover:bg-bidder-primary/70">
@@ -149,21 +240,16 @@ export default function DetailsPage({ params }) {
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={activeTab}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{
-                                    type: 'spring',
-                                    stiffness: 300,
-                                    damping: 25,
-                                }}
-                                className="overflow-hidden"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="border p-5 rounded-md"
                             >
-                                <p>
-                                    {activeTab === 'description'
-                                        ? 'Beatae laboriosam cumque rem unde temporibus earum officiis corporis. Dolores eius dolor ut ex mollitia in quos. Nobis et dicta modi facere praesentium. Iste ducimus magni. Veniam corporis consequatur quasi cum sapiente nulla id magnam. Et vero voluptatem fugit laboriosam nulla et laborum explicabo.'
-                                        : 'Accusamus ipsum officiis delectus. Dolorem sit qui ab illo ut et quas. Vel velit earum molestiae qui officia et. Consectetur repellat cumque id sit.'}
-                                </p>
+                                {activeTab === 'description' ? (
+                                    <p>{product.description}</p>
+                                ) : (
+                                    <p>{product.seller}</p>
+                                )}
                             </motion.div>
                         </AnimatePresence>
                     </div>

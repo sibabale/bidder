@@ -1,6 +1,8 @@
 'use client'
 import * as Yup from 'yup'
 import moment from 'moment'
+import numeral from 'numeral'
+import { NumericFormat } from 'react-number-format' // Import NumberFormat
 import { TimeInput } from '@nextui-org/date-input'
 import { useSelector } from 'react-redux'
 import React, { useState } from 'react'
@@ -39,6 +41,11 @@ const CreateAuctionPage = () => {
         image: Yup.mixed().required('Image is required'),
         description: Yup.string().required('Description is required'),
         startingPrice: Yup.number()
+            .transform((value, originalValue) => {
+                // Remove the currency prefix and commas for validation
+                const numericValue = originalValue.replace(/[^0-9.-]+/g, '')
+                return Number(numericValue)
+            })
             .required('Starting price is required')
             .min(10, 'Starting price must be at least R10'),
         subTitle: Yup.string()
@@ -391,14 +398,35 @@ const CreateAuctionPage = () => {
                             </div>
 
                             <div className="my-2">
-                                <Field
-                                    name="startingPrice"
-                                    type="number"
-                                    as={TextInput}
-                                    label="Starting Price"
-                                    required={true}
-                                    disabled={isLoading || isSubmitting}
-                                />
+                                <Field name="startingPrice">
+                                    {({ field }) => (
+                                        <NumericFormat
+                                            {...field}
+                                            label="Starting Price"
+                                            required={true}
+                                            disabled={isLoading || isSubmitting}
+                                            thousandSeparator={true}
+                                            prefix="R"
+                                            decimalScale={2}
+                                            fixedDecimalScale={true}
+                                            isNumericString
+                                            onValueChange={(values) => {
+                                                const {
+                                                    formattedValue,
+                                                    value,
+                                                } = values
+                                                setFieldValue(
+                                                    'startingPrice',
+                                                    value
+                                                ) // Set the numeric value to form state
+                                            }}
+                                            className="w-full px-2 h-[36px] border border-secondary-primary rounded-none focus:outline-none focus:ring-2 focus:ring-bidder-primary"
+                                            value={numeral(field.value).format(
+                                                'R0,0.00'
+                                            )} // Use numeral to format the value
+                                        />
+                                    )}
+                                </Field>
                                 <ErrorMessage
                                     name="startingPrice"
                                     component="small"
