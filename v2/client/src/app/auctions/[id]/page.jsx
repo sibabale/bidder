@@ -1,41 +1,47 @@
 'use client'
 
-import TimerIcon from '../../../components/atoms/icons/timer'
-import { Button } from '../../../components/ui/button'
-import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import numeral from 'numeral'
+import { useSocket } from '../../hooks/useSocket'
 import { useEffect, useState } from 'react'
-import numeral from 'numeral' // Import numeral.js
+import { motion, AnimatePresence } from 'framer-motion'
+
+import { Button } from '../../../components/ui/button'
+import CountdownTimer from '../../../components/molecules/bidding-counter'
 
 export default function DetailsPage({ params }) {
+    const socket = useSocket()
+
+    const [bids, setBids] = useState([])
     const [error, setError] = useState(null)
     const [product, setProduct] = useState(null)
     const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('description')
+    const [biddingPrice, setBiddingPrice] = useState(0)
 
     const { id } = params
 
+    const token = process.env.NEXT_PUBLIC_BEARER_API_TOKEN
+    const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
     useEffect(() => {
         const fetchProduct = async () => {
             if (!id) return
-            const token = process.env.NEXT_PUBLIC_BEARER_API_TOKEN
 
             try {
-                const response = await fetch(
-                    `http://localhost:3000/api/products/${id}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                )
+                const response = await fetch(`${baseURL}/api/products/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
 
                 if (!response.ok) throw new Error('Failed to fetch product')
 
                 const data = await response.json()
                 setProduct(data)
+
+                setBiddingPrice(data.highestBid)
             } catch (error) {
                 setError(error.message)
             } finally {
@@ -46,94 +52,67 @@ export default function DetailsPage({ params }) {
         fetchProduct()
     }, [id])
 
+    useEffect(() => {
+        if (!socket) return
+
+        // Listen for new bids from the server
+        socket.on('new_bid', (bid) => {
+            setBids((prevBids) => [...prevBids, bid])
+            console.log('New bid received:', bid)
+        })
+
+        // Cleanup the listener when component unmounts
+        return () => {
+            socket.off('new_bid')
+        }
+    }, [socket])
+
+    const handleBidSubmit = async (e) => {
+        e.preventDefault()
+
+        // Construct the bid object
+        const bidData = {
+            userId: 'Bv2HMmL2NANdxUaLHzLbnl6lYOy1', // Get this from your auth context or state
+            amount: Number(biddingPrice),
+            productId: id,
+        }
+
+        try {
+            // Make an HTTP POST request to your REST API
+            const response = await fetch(`${baseURL}/api/bids`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(bidData),
+            })
+
+            // Emit a WebSocket event if the bid was successful
+            if (response.status === 201) {
+                socket.emit('place_bid', bidData) // Notify others about the new bid
+            }
+        } catch (error) {
+            console.error('Error placing bid:', error)
+            // Handle error (e.g., show a notification to the user)
+        }
+    }
+
+    const increaseBid = () => {
+        setBiddingPrice((prev) => prev + 10) // Increment by 10 (or your desired value)
+    }
+
+    const decreaseBid = () => {
+        setBiddingPrice((prev) =>
+            prev > product.startPrice ? prev - 10 : product.startPrice
+        )
+    }
+
     if (loading)
         return <p className="text-center mt-10">Loading product details...</p>
     if (error) return <p className="text-center text-red-500 mt-10">{error}</p>
 
     if (!product) return null
-
-    const calculateRemainingTime = (endTime) => {
-        const now = new Date()
-        const end = new Date(endTime)
-        const remaining = end - now
-
-        if (remaining < 0) {
-            return { days: 0, hours: 0, minutes: 0, seconds: 0 }
-        }
-
-        const seconds = Math.floor((remaining / 1000) % 60)
-        const minutes = Math.floor((remaining / 1000 / 60) % 60)
-        const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24)
-        const days = Math.floor(remaining / (1000 * 60 * 60 * 24))
-
-        return { days, hours, minutes, seconds }
-    }
-
-    const CountdownTimer = ({ endTime }) => {
-        const [timeLeft, setTimeLeft] = useState(
-            calculateRemainingTime(endTime)
-        )
-
-        useEffect(() => {
-            const timerId = setInterval(() => {
-                setTimeLeft(calculateRemainingTime(endTime))
-            }, 1000)
-
-            return () => clearInterval(timerId)
-        }, [endTime])
-
-        if (
-            timeLeft.days === 0 &&
-            timeLeft.hours === 0 &&
-            timeLeft.minutes === 0 &&
-            timeLeft.seconds === 0
-        ) {
-            return <p className="text-red-600">Time is up!</p>
-        }
-
-        return (
-            <div className="mt-5">
-                <div className="flex items-center">
-                    <TimerIcon />
-                    <span className="ml-2 text-red-600">Time remaining:</span>
-                </div>
-                <div className="flex space-x-4 mt-2">
-                    {timeLeft.days > 0 && (
-                        <div className="flex flex-col items-center">
-                            <span className="text-lg font-bold">
-                                {timeLeft.days}
-                            </span>
-                            <span className="text-sm text-gray-500">Days</span>
-                        </div>
-                    )}
-                    {timeLeft.hours > 0 && (
-                        <div className="flex flex-col items-center">
-                            <span className="text-lg font-bold">
-                                {timeLeft.hours}
-                            </span>
-                            <span className="text-sm text-gray-500">Hours</span>
-                        </div>
-                    )}
-                    {timeLeft.minutes > 0 && (
-                        <div className="flex flex-col items-center">
-                            <span className="text-lg font-bold">
-                                {timeLeft.minutes}
-                            </span>
-                            <span className="text-sm text-gray-500">
-                                Minutes
-                            </span>
-                        </div>
-                    )}
-                    <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold">
-                            {timeLeft.seconds}
-                        </span>
-                        <span className="text-sm text-gray-500">Seconds</span>
-                    </div>
-                </div>
-            </div>
-        )
-    }
 
     return (
         <div className="max-w-7xl mx-auto p-4">
@@ -181,20 +160,24 @@ export default function DetailsPage({ params }) {
                         <small className="text-gray-500">Starting bid</small>
                         <p className="text-2xl md:text-3xl lg:text-2xl text-black font-bold mt-1">
                             R{numeral(product.startPrice).format('R0,0.00')}{' '}
-                            {/* Format with numeral */}
                         </p>
                     </div>
 
                     {product.status === 'live' && (
                         <div className="flex items-center justify-between mt-4">
-                            <button className="text-2xl border h-10 w-10 rounded-full">
+                            <button
+                                className="text-2xl border h-10 w-10 rounded-full"
+                                onClick={decreaseBid}
+                            >
                                 -
                             </button>
                             <p className="text-lg md:text-xl lg:text-2xl">
-                                R{numeral(product.startPrice).format('R0,0.00')}{' '}
-                                {/* Format with numeral */}
+                                R{numeral(biddingPrice).format('R0,0.00')}{' '}
                             </p>
-                            <button className="text-2xl border h-10 w-10 rounded-full">
+                            <button
+                                className="text-2xl border h-10 w-10 rounded-full"
+                                onClick={increaseBid}
+                            >
                                 +
                             </button>
                         </div>
@@ -202,12 +185,15 @@ export default function DetailsPage({ params }) {
 
                     {product.status !== 'live' && <hr className="mt-5" />}
 
-                    {product.endTime && (
+                    {product.status !== 'live' && (
                         <CountdownTimer endTime={product.endTime} />
                     )}
 
                     {product.status === 'live' && (
-                        <Button className="mt-6 w-full bg-bidder-primary cursor-pointer text-white py-3 hover:bg-bidder-primary/70">
+                        <Button
+                            onClick={handleBidSubmit}
+                            className="mt-6 w-full bg-bidder-primary cursor-pointer text-white py-3 hover:bg-bidder-primary/70"
+                        >
                             Place a bid
                         </Button>
                     )}

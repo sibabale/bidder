@@ -146,9 +146,11 @@ const CreateAuctionPage = () => {
                 throw new Error('Image is required')
             }
             const token = process.env.NEXT_PUBLIC_BEARER_API_TOKEN
+            const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
+
             const imageUrl = await handleUploadImage(values.image)
 
-            await fetch('http://localhost:3000/api/products', {
+            await fetch(`${baseURL}/api/products`, {
                 method: 'POST',
                 body: JSON.stringify({
                     title: values.title,
