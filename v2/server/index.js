@@ -31,6 +31,11 @@ app.use((req, res, next) => {
     next();
 });
 
+// default route
+app.get('/', (req, res) => {
+  res.send('Welcome to the API!');
+});
+
 // Use routers
 app.use('/api/bids', createBid);
 
