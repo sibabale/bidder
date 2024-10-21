@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const { collection, getDocs, doc, updateDoc } = require('firebase/firestore');
 const db = require('../../../firebase-config'); 
+const moment = require('moment'); // Import moment
 
 // Function to update product statuses
 const updateProductStatuses = async () => {
@@ -8,23 +9,24 @@ const updateProductStatuses = async () => {
     const productsRef = collection(db, 'products');
     const productsSnapshot = await getDocs(productsRef);
 
-    const now = new Date();
+    const now = moment(); // Current time using moment
 
     // Loop through each product and update status based on time
     for (const productDoc of productsSnapshot.docs) {
       const productData = productDoc.data();
       const productId = productDoc.id;
 
-      // Check product status based on start and end times
-      const startTime = productData.startTime.toDate(); 
-      const endTime = productData.endTime.toDate();
+
+      // Parse start and end times using moment
+      const startTime = moment(productData.startTime);
+      const endTime = moment(productData.endTime);
 
       let newStatus;
 
       // Determine new status based on the current time
-      if (now < startTime) {
+      if (now.isBefore(startTime)) {
         newStatus = 'coming soon'; // Before start time
-      } else if (now > endTime) {
+      } else if (now.isAfter(endTime)) {
         newStatus = 'closed'; // After end time
       } else {
         newStatus = 'live'; // Within bidding time

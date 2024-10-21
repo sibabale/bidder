@@ -19,12 +19,18 @@ const getAllProducts = require('./src/routes/products/getAll');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_WHITELIST.split(','), 
+    methods: ['GET', 'POST'], 
+    credentials: true, 
+  }
+});
 
 app.use(express.json());
-app.use(morgan); // Use Logger middleware
-app.use(corsMiddleware); // Use CORS middleware
-app.use(helmetMiddleware); // Use Helmet middleware
+app.use(morgan); 
+app.use(corsMiddleware); 
+app.use(helmetMiddleware); 
 
 app.use((req, res, next) => {
     req.io = io;
@@ -58,7 +64,7 @@ io.on('connection', (socket) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

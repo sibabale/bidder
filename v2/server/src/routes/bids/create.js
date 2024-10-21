@@ -12,18 +12,15 @@ const bidLimiter = rateLimit({
   max: 5, // Limit each IP to 5 bids per window
 });
 
-
-
 router.post('/', bidLimiter, verifyToken, async (req, res) => {
   try {
-    const { productId, amount } = req.body;
-    const userId = req.userId;
+    const { userId, amount, productId,  } = req.body;
 
     // Input validation
     if (!productId || !amount) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    if (!validator.isLength(productId, { min: 1 }) || !validator.isLength(productId, { min: 1 })) {
+    if (!validator.isLength(productId, { min: 1 }) || !validator.isLength(userId, { min: 1 })) {
       return res.status(400).json({ message: 'Invalid product or user ID format' });
     }
     if (typeof amount !== 'number' || amount <= 0) {
@@ -77,12 +74,12 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
       });
 
       // Update highest bid amount if the new bid is greater than the current highest bid amount
-      const currentHighestBidAmount = productData.highestBidAmount || productData.startPrice;
+      const currentHighestBid = productData.highestBid || productData.startPrice;
 
-      if (amount > currentHighestBidAmount) {
+      if (amount > currentHighestBid) {
         // Update the highest bid amount
         transaction.update(productRef, {
-          highestBidAmount: amount,
+          highestBid: amount,
         });
       } else {
         // Throw an error if the bid is not higher than the current highest bid
