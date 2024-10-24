@@ -193,7 +193,11 @@ export default function DetailsPage({ params }) {
                     {data.status !== 'live' && <hr className="mt-5" />}
 
                     {data.status !== 'live' && (
-                        <CountdownTimer endTime={data.endTime} />
+                        <CountdownTimer
+                            status={data.status}
+                            endTime={data.endTime}
+                            startTime={data.startTime}
+                        />
                     )}
 
                     {data.status === 'live' && (
