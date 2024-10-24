@@ -1,11 +1,14 @@
 'use client'
 import { useRef } from 'react'
 import { Provider } from 'react-redux'
-import { store, persistor } from '../lib/store'
 import { PersistGate } from 'redux-persist/integration/react'
 import { NextUIProvider } from '@nextui-org/react'
+import { store, persistor } from '../lib/store'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 export default function StoreProvider({ children }) {
+    const queryClient = new QueryClient()
+
     const storeRef = useRef()
     if (!storeRef.current) {
         storeRef.current = store()
@@ -14,7 +17,9 @@ export default function StoreProvider({ children }) {
     return (
         <Provider store={storeRef.current}>
             <PersistGate loading={null} persistor={persistor}>
-                <NextUIProvider>{children}</NextUIProvider>
+                <QueryClientProvider client={queryClient}>
+                    <NextUIProvider>{children}</NextUIProvider>
+                </QueryClientProvider>
             </PersistGate>
         </Provider>
     )
