@@ -1,8 +1,6 @@
 'use client'
 import * as Yup from 'yup'
-import moment from 'moment'
-import numeral from 'numeral'
-import { NumericFormat } from 'react-number-format' // Import NumberFormat
+import moment from 'moment-timezone'
 import { TimeInput } from '@nextui-org/date-input'
 import { useSelector } from 'react-redux'
 import React, { useState } from 'react'
@@ -42,9 +40,11 @@ const CreateAuctionPage = () => {
         description: Yup.string().required('Description is required'),
         startingPrice: Yup.number()
             .transform((value, originalValue) => {
-                // Remove the currency prefix and commas for validation
-                const numericValue = originalValue.replace(/[^0-9.-]+/g, '')
-                return Number(numericValue)
+                if (originalValue) {
+                    const numericValue = originalValue.replace(/[^0-9.-]+/g, '')
+                    return Number(numericValue)
+                }
+                return 0
             })
             .required('Starting price is required')
             .min(10, 'Starting price must be at least R10'),
@@ -77,7 +77,9 @@ const CreateAuctionPage = () => {
                     const { startDate } = this.parent
 
                     if (!value || !startDate) return false
-                    const date = moment(startDate).format('YYYY-MM-DD')
+                    const date = moment(startDate)
+                        .tz('Africa/Johannesburg')
+                        .format('YYYY-MM-DD')
 
                     const selectedDateTime = moment(
                         `${date}T${value}`,
@@ -85,7 +87,7 @@ const CreateAuctionPage = () => {
                     )
 
                     console.log(selectedDateTime.format())
-                    const now = moment()
+                    const now = moment.tz('Africa/Johannesburg')
 
                     return selectedDateTime.isAfter(now.format())
                 }
@@ -102,15 +104,22 @@ const CreateAuctionPage = () => {
                     if (!value || !startTime || !startDate || !endDate)
                         return true
 
-                    const formattedStartDate =
-                        moment(startDate).format('YYYY-MM-DD')
-                    const formattedEndDate =
-                        moment(endDate).format('YYYY-MM-DD')
+                    // Set the time zone to South Africa (UTC+2)
+                    const formattedStartDate = moment(startDate)
+                        .tz('Africa/Johannesburg')
+                        .format('YYYY-MM-DD')
+                    const formattedEndDate = moment(endDate)
+                        .tz('Africa/Johannesburg')
+                        .format('YYYY-MM-DD')
 
-                    const startDateTime = moment(
-                        `${formattedStartDate} ${startTime}`
+                    const startDateTime = moment.tz(
+                        `${formattedStartDate} ${startTime}`,
+                        'Africa/Johannesburg'
                     )
-                    const endDateTime = moment(`${formattedEndDate} ${value}`)
+                    const endDateTime = moment.tz(
+                        `${formattedEndDate} ${value}`,
+                        'Africa/Johannesburg'
+                    )
 
                     return endDateTime.isAfter(startDateTime)
                 }
@@ -401,34 +410,29 @@ const CreateAuctionPage = () => {
 
                             <div className="my-2">
                                 <Field name="startingPrice">
-                                    {({ field }) => (
-                                        <NumericFormat
+                                    {({ field, form }) => (
+                                        <input
                                             {...field}
-                                            label="Starting Price"
-                                            required={true}
-                                            disabled={isLoading || isSubmitting}
-                                            thousandSeparator={true}
-                                            prefix="R"
-                                            decimalScale={2}
-                                            fixedDecimalScale={true}
-                                            isNumericString
-                                            onValueChange={(values) => {
-                                                const {
-                                                    formattedValue,
-                                                    value,
-                                                } = values
-                                                setFieldValue(
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="Enter price"
+                                            value={`R${field.value ? Number(field.value).toLocaleString('en-ZA') : ''}`} // Format value with thousands separator
+                                            onChange={(e) => {
+                                                const rawValue =
+                                                    e.target.value.replace(
+                                                        /[^0-9.]/g,
+                                                        ''
+                                                    )
+                                                form.setFieldValue(
                                                     'startingPrice',
-                                                    value
-                                                ) // Set the numeric value to form state
+                                                    rawValue
+                                                )
                                             }}
                                             className="w-full px-2 h-[36px] border border-secondary-primary rounded-none focus:outline-none focus:ring-2 focus:ring-bidder-primary"
-                                            value={numeral(field.value).format(
-                                                'R0,0.00'
-                                            )} // Use numeral to format the value
                                         />
                                     )}
                                 </Field>
+
                                 <ErrorMessage
                                     name="startingPrice"
                                     component="small"
