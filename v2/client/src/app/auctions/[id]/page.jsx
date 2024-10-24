@@ -161,7 +161,7 @@ export default function DetailsPage({ params }) {
 
                     <div className="mt-6">
                         <small className="text-gray-500">
-                            {data.startPrice === data.highestBid
+                            {data.startPrice >= data.highestBid
                                 ? 'Starting bid'
                                 : 'Current Bid'}
                         </small>
