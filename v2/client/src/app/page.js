@@ -9,14 +9,14 @@ export default function Home() {
                 </p>
                 <div className="mt-6 space-x-4">
                     <a
-                        href="/auctions"
-                        className="px-4 py-2 bg-blue-600 text-white rounded"
+                        href="/auth/login"
+                        className="px-4 py-2 bg-bidder-primary text-white"
                     >
                         Explore Auctions
                     </a>
                     <a
-                        href="/login"
-                        className="px-4 py-2 border border-blue-600 text-blue-600 rounded"
+                        href="/auth/login"
+                        className="px-4 py-2 border border-bidder-bg-bidder-primary text-bidder-bg-bidder-primary"
                     >
                         Login
                     </a>
