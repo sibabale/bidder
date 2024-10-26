@@ -22,7 +22,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.CORS_WHITELIST.split(','), 
-    methods: ['GET', 'POST'], 
+    methods: ['GET', 'POST','OPTIONS'], 
     credentials: true, 
   }
 });
