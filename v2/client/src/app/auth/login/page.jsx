@@ -154,7 +154,7 @@ const SignInPage = () => {
                         <p className="mb-5">
                             Forgot password?
                             <Link
-                                href="/reset-password"
+                                href="/auth/reset-password"
                                 className="ml-2 text-bidder-primary"
                             >
                                 Reset
@@ -163,7 +163,7 @@ const SignInPage = () => {
                         <p>
                             Don’t have an account?
                             <Link
-                                href="/signup"
+                                href="/auth/register"
                                 className="ml-2 text-bidder-primary"
                             >
                                 Signup
