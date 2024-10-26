@@ -20,10 +20,9 @@ export default function Header() {
     const { error, mutateAsync, isPending } = useMutation({
         mutationFn: async () => {
             const token = localStorage.getItem('bidder')
-            console.log('token: ', token)
-
+            const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
             await axios.post(
-                'http://localhost:4000/api/logout',
+                `${BASE_URL}/api/logout`,
                 {},
                 {
                     headers: {

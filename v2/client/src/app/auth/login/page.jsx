@@ -34,10 +34,8 @@ const SignInPage = () => {
 
     const loginMutation = useMutation({
         mutationFn: async (values) => {
-            const response = await axios.post(
-                'http://localhost:4000/api/login',
-                values
-            )
+            const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
+            const response = await axios.post(`${BASE_URL}/api/login`, values)
             console.log(response)
 
             localStorage.setItem('bidder', response.data.firebaseToken)

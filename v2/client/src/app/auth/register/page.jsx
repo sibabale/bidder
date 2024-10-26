@@ -37,7 +37,9 @@ const SignUpPage = () => {
 
     const { mutate, isPending, error } = useMutation({
         mutationFn: (values) => {
-            return axios.post('http://localhost:4000/api/register', values)
+            const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
+
+            return axios.post(`${BASE_URL}/api/register`, values)
         },
         onSuccess: () => {
             localStorage.setItem('bidder', response.data.user.firebaseToken)
