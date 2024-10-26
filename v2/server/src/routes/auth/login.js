@@ -1,7 +1,9 @@
 const express = require('express');
+const { doc, getDoc} = require('firebase/firestore');
 const { validationResult, body } = require('express-validator');
 const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
 
+const db = require('../../../firebase-config');
 const admin = require('../../config/firebase-admin');
 const router = express.Router();
 
@@ -23,8 +25,21 @@ router.post('/', [
         const user = userCredential.user;
         const firebaseToken = await user.getIdToken();
 
-        // Return success response
-        res.status(200).json({ message: 'Login successful', userId: user.uid, firebaseToken });
+        const userDocRef = doc(db, 'users', user.uid); 
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+            return res.status(404).json({ message: 'User not found in the database.' });
+        }
+
+        const userData = userDoc.data();
+
+        res.status(200).json({ message: 'Login successful', user: {
+            email: userData.email,
+            userId: user.uid,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+        }, firebaseToken });
 
     } catch (error) {
         console.error('Error logging in user:', error);

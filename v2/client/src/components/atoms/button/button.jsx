@@ -1,14 +1,6 @@
 import React from 'react'
 
-function Button({
-    text,
-    onClick,
-    disabled,
-    isLoading, 
-    className,
-}) {
- 
-
+function Button({ text, type, onClick, disabled, isLoading, className }) {
     return (
         <button
             type={type}
@@ -16,10 +8,10 @@ function Button({
             disabled={disabled}
             className={className}
         >
-            {text && <span>{text}</span>}
+            {text && !isLoading && <span>{text}</span>}
             {isLoading && <span>Loading...</span>}
         </button>
-    );
+    )
 }
 
-export default React.memo(Button);
+export default React.memo(Button)
