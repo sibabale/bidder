@@ -16,7 +16,7 @@ import PromotionBlob from '../../../components/molecules/promotion-blob'
 
 const SignInPage = () => {
     const dispatch = useDispatch()
-    const router = useRouter() // Using Next.js router for navigation
+    const router = useRouter()
 
     const validationSchema = Yup.object().shape({
         email: Yup.string()
@@ -32,7 +32,7 @@ const SignInPage = () => {
         password: '',
     }
 
-    const loginMutation = useMutation({
+    const { error, mutate, isPending } = useMutation({
         mutationFn: async (values) => {
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
             const response = await axios.post(`${BASE_URL}/api/login`, values)
@@ -79,15 +79,15 @@ const SignInPage = () => {
                         </h1>
 
                         <Alert
-                            message={loginMutation.error?.message || ''}
-                            isVisible={!!loginMutation.error}
+                            message={error?.message || ''}
+                            isVisible={!!error}
                         />
 
                         <Formik
                             initialValues={initialValues}
                             validationSchema={validationSchema}
                             onSubmit={(values, { setSubmitting }) => {
-                                loginMutation.mutate(values, {
+                                mutate(values, {
                                     onSuccess: () => {
                                         setSubmitting(false)
                                     },
@@ -106,10 +106,7 @@ const SignInPage = () => {
                                             as={TextInput}
                                             label="Email"
                                             required
-                                            disabled={
-                                                loginMutation.isLoading ||
-                                                isSubmitting
-                                            }
+                                            disabled={isPending || isSubmitting}
                                         />
                                         <ErrorMessage
                                             name="email"
@@ -125,10 +122,7 @@ const SignInPage = () => {
                                             as={TextInput}
                                             label="Password"
                                             required
-                                            disabled={
-                                                loginMutation.isLoading ||
-                                                isSubmitting
-                                            }
+                                            disabled={isPending || isSubmitting}
                                         />
                                         <ErrorMessage
                                             name="password"
@@ -141,11 +135,9 @@ const SignInPage = () => {
                                         type="submit"
                                         text="Sign In"
                                         variant="primary"
-                                        disabled={
-                                            loginMutation.isLoading ||
-                                            isSubmitting
-                                        }
-                                        className="main_button p-5 w-full my-10 text-white bg-bidder-primary"
+                                        isLoading={isPending}
+                                        disabled={isPending || isSubmitting}
+                                        className={`main_button p-5 w-full my-10 text-white bg-bidder-primary ${isPending || isSubmitting ? 'cursor-not-allowed bg-bidder-primary/40' : ''}`}
                                     />
                                 </Form>
                             )}
