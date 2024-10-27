@@ -160,11 +160,11 @@ const SignUpPage = () => {
 
                                     <Button
                                         type="submit"
-                                        text="Sign Up"
+                                        text="Register"
                                         disabled={isPending || isSubmitting}
                                         isLoading={isPending}
                                         variant="secondary"
-                                        className="p-5 w-full my-10 text-white bg-bidder-primary"
+                                        className={`p-5 w-full my-10 text-white bg-bidder-primary ${isPending || isSubmitting ? 'cursor-not-allowed bg-bidder-primary/40' : ''}`}
                                     />
                                 </Form>
                             )}
@@ -175,7 +175,7 @@ const SignUpPage = () => {
                                 href="/signin"
                                 className="ml-2 text-bidder-primary"
                             >
-                                Sign in
+                                Login
                             </Link>
                         </p>
                     </div>

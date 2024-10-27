@@ -133,11 +133,11 @@ const SignInPage = () => {
 
                                     <Button
                                         type="submit"
-                                        text="Sign In"
+                                        text="Login"
                                         variant="primary"
                                         isLoading={isPending}
                                         disabled={isPending || isSubmitting}
-                                        className={`main_button p-5 w-full my-10 text-white bg-bidder-primary ${isPending || isSubmitting ? 'cursor-not-allowed bg-bidder-primary/40' : ''}`}
+                                        className={`p-5 w-full my-10 text-white bg-bidder-primary ${isPending || isSubmitting ? 'cursor-not-allowed bg-bidder-primary/40' : ''}`}
                                     />
                                 </Form>
                             )}
@@ -158,7 +158,7 @@ const SignInPage = () => {
                                 href="/auth/register"
                                 className="ml-2 text-bidder-primary"
                             >
-                                Signup
+                                Register
                             </Link>
                         </p>
                     </div>
