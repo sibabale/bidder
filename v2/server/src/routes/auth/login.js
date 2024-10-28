@@ -4,7 +4,6 @@ const { validationResult, body } = require('express-validator');
 const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
 
 const db = require('../../../firebase-config');
-const admin = require('../../config/firebase-admin');
 const router = express.Router();
 
 // Handle user login

@@ -11,7 +11,7 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata = {
-    title: 'Bidder',
+    title: 'Biddar',
     description: 'Online bidding platform',
 }
 

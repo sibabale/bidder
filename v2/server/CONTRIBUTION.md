@@ -1,10 +1,10 @@
-# Contributing to Bidder
+# Contributing to Biddar
 
-Thank you for considering contributing to **Bidder**! We appreciate your interest in making our platform better. This document outlines how you can contribute to our project.
+Thank you for considering contributing to **Biddar**! We appreciate your interest in making our platform better. This document outlines how you can contribute to our project.
 
 ## 🚀 Getting Started
 
-To get started with Bidder, follow these steps:
+To get started with Biddar, follow these steps:
 
 1. **Fork the Repository**: Click the "Fork" button at the top right of the repository page to create your copy of the repository.
 
@@ -98,4 +98,4 @@ If you have any questions or need assistance, feel free to reach out through Git
 
 ---
 
-Thank you for contributing to Bidder! Your help makes our project better for everyone.
+Thank you for contributing to Biddar! Your help makes our project better for everyone.

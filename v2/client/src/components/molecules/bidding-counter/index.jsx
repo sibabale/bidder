@@ -100,9 +100,6 @@ const CountdownTimer = ({ status, startTime, endTime }) => {
                     </div>
                 </div>
             )}
-            {isAuctionFinished && (
-                <p className="text-red-600">Auction has ended!</p>
-            )}
         </div>
     )
 }

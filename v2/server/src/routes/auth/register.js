@@ -61,6 +61,7 @@ router.post('/', registerLimiter, [
             creationTime,
             emailVerified: false,
             lastSignInTime,
+            firebaseToken
         });
 
         res.status(201).json({ message: 'User registered successfully', userId: uid, firebaseToken });

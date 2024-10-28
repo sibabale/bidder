@@ -3,7 +3,7 @@ export default function Home() {
         <>
             {/* <Header /> */}
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-                <h1 className="text-3xl font-bold">Welcome to Bidder</h1>
+                <h1 className="text-3xl font-bold">Welcome to Biddar</h1>
                 <p className="mt-4 text-gray-700">
                     Join live auctions and place your bids in real-time.
                 </p>

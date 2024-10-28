@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import numeral from 'numeral'
 import { useQuery } from '@tanstack/react-query'
-import { useSocket } from '../../hooks/useSocket'
+import { useSocket } from '../../../hooks/useSocket'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -20,7 +20,7 @@ export default function DetailsPage({ params }) {
 
     const { id } = params
 
-    const token = localStorage.getItem('bidder')
+    const token = localStorage.getItem('biddar')
     const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
 
     async function fetchProductDetails(id) {

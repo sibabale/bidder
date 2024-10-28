@@ -1,7 +1,8 @@
 'use client'
 import * as Yup from 'yup'
-import moment from 'moment-timezone'
+import moment from 'moment'
 import { TimeInput } from '@nextui-org/date-input'
+import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
@@ -23,6 +24,7 @@ import { loggedInUser } from '../../../lib/store/selectors/user'
 
 const CreateAuctionPage = () => {
     const user = useSelector(loggedInUser)
+    const router = useRouter()
     const [error, setError] = useState(null)
     const [endDate, setEndDate] = useState(null)
     const [startDate, setStartDate] = useState(null)
@@ -77,9 +79,7 @@ const CreateAuctionPage = () => {
                     const { startDate } = this.parent
 
                     if (!value || !startDate) return false
-                    const date = moment(startDate)
-                        .tz('Africa/Johannesburg')
-                        .format('YYYY-MM-DD')
+                    const date = moment(startDate).format('YYYY-MM-DD')
 
                     const selectedDateTime = moment(
                         `${date}T${value}`,
@@ -87,7 +87,7 @@ const CreateAuctionPage = () => {
                     )
 
                     console.log(selectedDateTime.format())
-                    const now = moment.tz('Africa/Johannesburg')
+                    const now = moment()
 
                     return selectedDateTime.isAfter(now.format())
                 }
@@ -104,22 +104,19 @@ const CreateAuctionPage = () => {
                     if (!value || !startTime || !startDate || !endDate)
                         return true
 
-                    // Set the time zone to South Africa (UTC+2)
-                    const formattedStartDate = moment(startDate)
-                        .tz('Africa/Johannesburg')
-                        .format('YYYY-MM-DD')
-                    const formattedEndDate = moment(endDate)
-                        .tz('Africa/Johannesburg')
-                        .format('YYYY-MM-DD')
+                    const formattedStartDate =
+                        moment(startDate).format('YYYY-MM-DD')
+                    const formattedEndDate =
+                        moment(endDate).format('YYYY-MM-DD')
 
-                    const startDateTime = moment.tz(
-                        `${formattedStartDate} ${startTime}`,
-                        'Africa/Johannesburg'
+                    const startDateTime = moment(
+                        `${formattedStartDate} ${startTime}`
                     )
-                    const endDateTime = moment.tz(
-                        `${formattedEndDate} ${value}`,
-                        'Africa/Johannesburg'
-                    )
+                    const endDateTime = moment(`${formattedEndDate} ${value}`)
+
+                    if (formattedStartDate === formattedEndDate) {
+                        return endDateTime.isAfter(startDateTime)
+                    }
 
                     return endDateTime.isAfter(startDateTime)
                 }
@@ -154,7 +151,7 @@ const CreateAuctionPage = () => {
             if (!values.image) {
                 throw new Error('Image is required')
             }
-            const token = process.env.NEXT_PUBLIC_BEARER_API_TOKEN
+            const token = localStorage.getItem('biddar')
             const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
 
             const imageUrl = await handleUploadImage(values.image)
@@ -164,8 +161,7 @@ const CreateAuctionPage = () => {
                 body: JSON.stringify({
                     title: values.title,
                     image: imageUrl,
-                    // userId: user.userId,
-                    userId: 'Bv2HMmL2NANdxUaLHzLbnl6lYOy1',
+                    userId: user.userId,
                     endTime: values.endTime,
                     endDate: endDate.toISOString(),
                     subTitle: values.subTitle,
@@ -179,6 +175,7 @@ const CreateAuctionPage = () => {
                     'Content-Type': 'application/json',
                 },
             })
+            router.replace('/auctions')
         } catch (err) {
             console.error('Unexpected error:', err)
             setError('An unexpected error occurred. Please try again.')

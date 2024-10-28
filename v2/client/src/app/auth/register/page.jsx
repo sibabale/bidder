@@ -42,10 +42,12 @@ const SignUpPage = () => {
             return axios.post(`${BASE_URL}/api/register`, values)
         },
         onSuccess: () => {
-            localStorage.setItem('bidder', response.data.user.firebaseToken)
+            localStorage.setItem('biddar', response.data.user.firebaseToken)
             router.replace('/auctions')
         },
         onError: (error) => {
+            console.log(error)
+
             if (error.response) {
                 console.error('Server Error:', error.response.data)
                 setAuthError(error.response.data.message)
@@ -65,7 +67,7 @@ const SignUpPage = () => {
                 <Link href="/" className="flex items-center">
                     <div className="h-10 w-10 bg-bidder-primary rounded-full"></div>
                     <h1 className="ml-3 text-black text-2xl font-bold">
-                        Bidder
+                        Biddar
                     </h1>
                 </Link>
             </div>

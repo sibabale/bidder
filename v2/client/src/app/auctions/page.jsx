@@ -9,7 +9,7 @@ export default function AuctionsPage() {
     const [error, setError] = useState(null)
 
     useEffect(() => {
-        const token = localStorage.getItem('bidder')
+        const token = localStorage.getItem('biddar')
         const basURL = process.env.NEXT_PUBLIC_BEARER_API_URL
 
         const fetchAuctions = async () => {

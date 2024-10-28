@@ -4,11 +4,10 @@ import { useRouter, usePathname } from 'next/navigation'
 
 const ProtectedRoute = ({ children }) => {
     const router = useRouter()
-    const pathname = usePathname() // Get the current route path
+    const pathname = usePathname()
 
     useEffect(() => {
-        const token = localStorage.getItem('bidder')
-        console.log('token:', token)
+        const token = localStorage.getItem('biddar')
 
         const authRoutes = [
             '/auth/login',

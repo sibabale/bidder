@@ -19,7 +19,7 @@ export default function Header() {
 
     const { error, mutateAsync, isPending } = useMutation({
         mutationFn: async () => {
-            const token = localStorage.getItem('bidder')
+            const token = localStorage.getItem('biddar')
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
             await axios.post(
                 `${BASE_URL}/api/logout`,
@@ -30,7 +30,7 @@ export default function Header() {
                     },
                 }
             )
-            localStorage.removeItem('bidder')
+            localStorage.removeItem('biddar')
             dispatch(logout())
             router.push('/auth/login')
         },
@@ -47,7 +47,7 @@ export default function Header() {
                     <div className="text-2xl font-bold">
                         <Link href="/" className="flex items-center">
                             <div className="h-10 w-10 bg-bidder-primary rounded-full"></div>
-                            <h1 className="ml-3 text-black">Bidder</h1>
+                            <h1 className="ml-3 text-black">Biddar</h1>
                         </Link>
                     </div>
 

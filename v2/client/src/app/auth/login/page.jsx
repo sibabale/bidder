@@ -36,18 +36,15 @@ const SignInPage = () => {
         mutationFn: async (values) => {
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
             const response = await axios.post(`${BASE_URL}/api/login`, values)
-            console.log(response)
 
-            localStorage.setItem('bidder', response.data.firebaseToken)
+            localStorage.setItem('biddar', response.data.firebaseToken)
             return response.data.user
         },
         onSuccess: (user) => {
-            console.log(user)
-
             dispatch(
                 login({
                     email: user.email,
-                    userId: user.uid,
+                    userId: user.userId,
                     lastName: user.lastName,
                     firstName: user.firstName,
                 })
@@ -66,7 +63,7 @@ const SignInPage = () => {
                 <Link href="/" className="flex items-center outline-none">
                     <div className="h-10 w-10 bg-bidder-primary rounded-full"></div>
                     <h1 className="ml-3 text-black text-2xl font-bold">
-                        Bidder
+                        Biddar
                     </h1>
                 </Link>
             </div>
