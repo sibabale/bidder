@@ -1,7 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
+import Image from 'next/image'
+import numeral from 'numeral'
 
 export default function AuctionCard({ product }) {
     return (
@@ -30,7 +31,7 @@ export default function AuctionCard({ product }) {
                         Starting bid
                     </small>
                     <p className="text-black text-base font-bold mt-1">
-                        R{product.startPrice}
+                        R{numeral(product.startPrice).format('R0,0.00')}
                     </p>
                 </div>
             </div>

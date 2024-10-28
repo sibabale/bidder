@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import numeral from 'numeral'
-import { useSocket } from '../../hooks/useSocket'
+import { useQuery } from '@tanstack/react-query'
+import { useSocket } from '../../../hooks/useSocket'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -13,59 +14,60 @@ export default function DetailsPage({ params }) {
     const socket = useSocket()
 
     const [bids, setBids] = useState([])
-    const [error, setError] = useState(null)
-    const [product, setProduct] = useState(null)
-    const [loading, setLoading] = useState(true)
     const [activeTab, setActiveTab] = useState('description')
-    const [biddingPrice, setBiddingPrice] = useState(0)
+    const [currentBid, setCurrentBid] = useState()
+    const [biddingPrice, setBiddingPrice] = useState()
 
     const { id } = params
 
-    const token = process.env.NEXT_PUBLIC_BEARER_API_TOKEN
+    const token = localStorage.getItem('biddar')
     const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
+
+    async function fetchProductDetails(id) {
+        const response = await fetch(`${baseURL}/api/products/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        })
+
+        if (!response.ok) throw new Error('Failed to fetch product')
+
+        return response.json()
+    }
+
+    const { data, error, isError, isPending } = useQuery({
+        queryKey: ['product', id],
+        queryFn: () => fetchProductDetails(id),
+        enabled: !!id,
+    })
+
     useEffect(() => {
-        const fetchProduct = async () => {
-            if (!id) return
-
-            try {
-                const response = await fetch(`${baseURL}/api/products/${id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                })
-
-                if (!response.ok) throw new Error('Failed to fetch product')
-
-                const data = await response.json()
-                setProduct(data)
-
-                setBiddingPrice(data.highestBid)
-            } catch (error) {
-                setError(error.message)
-            } finally {
-                setLoading(false)
-            }
+        if (data?.highestBid) {
+            setCurrentBid(data?.highestBid)
+            setBiddingPrice(data?.highestBid)
         }
-
-        fetchProduct()
-    }, [id])
+    }, [data])
 
     useEffect(() => {
         if (!socket) return
 
         // Listen for new bids from the server
-        socket.on('new_bid', (bid) => {
+        const handleNewBid = (bid) => {
             setBids((prevBids) => [...prevBids, bid])
             console.log('New bid received:', bid)
-        })
+            setCurrentBid(bid.amount)
+            setBiddingPrice(bid.amount)
+        }
+
+        socket.on('new_bid', handleNewBid)
 
         // Cleanup the listener when component unmounts
         return () => {
-            socket.off('new_bid')
+            socket.off('new_bid', handleNewBid)
         }
-    }, [socket])
+    }, [socket, biddingPrice])
 
     const handleBidSubmit = async (e) => {
         e.preventDefault()
@@ -99,28 +101,29 @@ export default function DetailsPage({ params }) {
     }
 
     const increaseBid = () => {
-        setBiddingPrice((prev) => prev + 10) // Increment by 10 (or your desired value)
+        setBiddingPrice((prev) => prev + 10)
     }
 
     const decreaseBid = () => {
         setBiddingPrice((prev) =>
-            prev > product.startPrice ? prev - 10 : product.startPrice
+            prev > data.highestBid ? prev - 10 : data.highestBid
         )
     }
 
-    if (loading)
+    if (isPending)
         return <p className="text-center mt-10">Loading product details...</p>
-    if (error) return <p className="text-center text-red-500 mt-10">{error}</p>
+    if (isError)
+        return <p className="text-center text-red-500 mt-10">{error.message}</p>
 
-    if (!product) return null
+    if (!data) return null
 
     return (
         <div className="max-w-7xl mx-auto p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="w-full h-auto relative overflow-hidden">
                     <Image
-                        src={product.image}
-                        alt={product.title}
+                        src={data.image}
+                        alt={data.title}
                         width={1200}
                         height={600}
                         className="object-cover w-full h-[300px] md:h-[500px] lg:h-[600px]"
@@ -131,17 +134,17 @@ export default function DetailsPage({ params }) {
                     <div className="border-b pb-4">
                         <div className="flex items-center justify-between flex-wrap">
                             <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold mt-4">
-                                {product.title}
+                                {data.title}
                             </h1>
 
-                            {product.status === 'live' ? (
+                            {data.status === 'live' ? (
                                 <div className="flex items-center mt-4">
                                     <span className="mr-3">Live</span>
                                     <div className="w-5 h-5 flex items-center justify-center rounded-full animate-pulse bg-red-300">
                                         <div className="w-3 h-3 rounded-full animate-pulse bg-red-500"></div>
                                     </div>
                                 </div>
-                            ) : product.status === 'closed' ? (
+                            ) : data.status === 'closed' ? (
                                 <div className="px-2 mt-4 h-fit bg-red-600 text-white rounded-full">
                                     Closed
                                 </div>
@@ -157,13 +160,17 @@ export default function DetailsPage({ params }) {
                     </div>
 
                     <div className="mt-6">
-                        <small className="text-gray-500">Starting bid</small>
+                        <small className="text-gray-500">
+                            {data.startPrice >= data.highestBid
+                                ? 'Starting bid'
+                                : 'Current Bid'}
+                        </small>
                         <p className="text-2xl md:text-3xl lg:text-2xl text-black font-bold mt-1">
-                            R{numeral(product.startPrice).format('R0,0.00')}{' '}
+                            R{numeral(currentBid).format('R0,0.00')}{' '}
                         </p>
                     </div>
 
-                    {product.status === 'live' && (
+                    {data.status === 'live' && (
                         <div className="flex items-center justify-between mt-4">
                             <button
                                 className="text-2xl border h-10 w-10 rounded-full"
@@ -183,13 +190,17 @@ export default function DetailsPage({ params }) {
                         </div>
                     )}
 
-                    {product.status !== 'live' && <hr className="mt-5" />}
+                    {data.status !== 'live' && <hr className="mt-5" />}
 
-                    {product.status !== 'live' && (
-                        <CountdownTimer endTime={product.endTime} />
+                    {data.status !== 'live' && (
+                        <CountdownTimer
+                            status={data.status}
+                            endTime={data.endTime}
+                            startTime={data.startTime}
+                        />
                     )}
 
-                    {product.status === 'live' && (
+                    {data.status === 'live' && (
                         <Button
                             onClick={handleBidSubmit}
                             className="mt-6 w-full bg-bidder-primary cursor-pointer text-white py-3 hover:bg-bidder-primary/70"
@@ -223,23 +234,53 @@ export default function DetailsPage({ params }) {
                             </div>
                         </div>
 
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="border p-5 rounded-md"
-                            >
-                                {activeTab === 'description' ? (
-                                    <p>{product.description}</p>
-                                ) : (
-                                    <p>{product.seller}</p>
-                                )}
-                            </motion.div>
+                        <AnimatePresence>
+                            {activeTab === 'description' && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <p className="mt-4 text-sm md:text-base text-gray-600">
+                                        {data.description}
+                                    </p>
+                                </motion.div>
+                            )}
+
+                            {activeTab === 'seller' && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <h3 className="font-semibold mt-4">
+                                        {data.seller?.name}
+                                    </h3>
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        {data.seller?.email}
+                                    </p>
+                                </motion.div>
+                            )}
                         </AnimatePresence>
                     </div>
                 </div>
+            </div>
+
+            {/* Bids History */}
+            <div className="mt-6">
+                <h2 className="text-lg font-semibold">Bids History</h2>
+                <ul className="mt-4 space-y-2">
+                    {bids.map((bid, index) => (
+                        <li key={index} className="flex justify-between">
+                            <span>{bid.userId}</span>
+                            <span>
+                                R{numeral(bid.amount).format('R0,0.00')}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     )

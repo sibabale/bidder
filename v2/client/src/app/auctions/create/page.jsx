@@ -1,9 +1,8 @@
 'use client'
 import * as Yup from 'yup'
 import moment from 'moment'
-import numeral from 'numeral'
-import { NumericFormat } from 'react-number-format' // Import NumberFormat
 import { TimeInput } from '@nextui-org/date-input'
+import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
@@ -25,6 +24,7 @@ import { loggedInUser } from '../../../lib/store/selectors/user'
 
 const CreateAuctionPage = () => {
     const user = useSelector(loggedInUser)
+    const router = useRouter()
     const [error, setError] = useState(null)
     const [endDate, setEndDate] = useState(null)
     const [startDate, setStartDate] = useState(null)
@@ -42,9 +42,11 @@ const CreateAuctionPage = () => {
         description: Yup.string().required('Description is required'),
         startingPrice: Yup.number()
             .transform((value, originalValue) => {
-                // Remove the currency prefix and commas for validation
-                const numericValue = originalValue.replace(/[^0-9.-]+/g, '')
-                return Number(numericValue)
+                if (originalValue) {
+                    const numericValue = originalValue.replace(/[^0-9.-]+/g, '')
+                    return Number(numericValue)
+                }
+                return 0
             })
             .required('Starting price is required')
             .min(10, 'Starting price must be at least R10'),
@@ -112,6 +114,10 @@ const CreateAuctionPage = () => {
                     )
                     const endDateTime = moment(`${formattedEndDate} ${value}`)
 
+                    if (formattedStartDate === formattedEndDate) {
+                        return endDateTime.isAfter(startDateTime)
+                    }
+
                     return endDateTime.isAfter(startDateTime)
                 }
             ),
@@ -145,7 +151,7 @@ const CreateAuctionPage = () => {
             if (!values.image) {
                 throw new Error('Image is required')
             }
-            const token = process.env.NEXT_PUBLIC_BEARER_API_TOKEN
+            const token = localStorage.getItem('biddar')
             const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
 
             const imageUrl = await handleUploadImage(values.image)
@@ -155,8 +161,7 @@ const CreateAuctionPage = () => {
                 body: JSON.stringify({
                     title: values.title,
                     image: imageUrl,
-                    // userId: user.userId,
-                    userId: 'Bv2HMmL2NANdxUaLHzLbnl6lYOy1',
+                    userId: user.userId,
                     endTime: values.endTime,
                     endDate: endDate.toISOString(),
                     subTitle: values.subTitle,
@@ -170,6 +175,7 @@ const CreateAuctionPage = () => {
                     'Content-Type': 'application/json',
                 },
             })
+            router.replace('/auctions')
         } catch (err) {
             console.error('Unexpected error:', err)
             setError('An unexpected error occurred. Please try again.')
@@ -401,34 +407,29 @@ const CreateAuctionPage = () => {
 
                             <div className="my-2">
                                 <Field name="startingPrice">
-                                    {({ field }) => (
-                                        <NumericFormat
+                                    {({ field, form }) => (
+                                        <input
                                             {...field}
-                                            label="Starting Price"
-                                            required={true}
-                                            disabled={isLoading || isSubmitting}
-                                            thousandSeparator={true}
-                                            prefix="R"
-                                            decimalScale={2}
-                                            fixedDecimalScale={true}
-                                            isNumericString
-                                            onValueChange={(values) => {
-                                                const {
-                                                    formattedValue,
-                                                    value,
-                                                } = values
-                                                setFieldValue(
+                                            type="text"
+                                            inputMode="decimal"
+                                            placeholder="Enter price"
+                                            value={`R${field.value ? Number(field.value).toLocaleString('en-ZA') : ''}`} // Format value with thousands separator
+                                            onChange={(e) => {
+                                                const rawValue =
+                                                    e.target.value.replace(
+                                                        /[^0-9.]/g,
+                                                        ''
+                                                    )
+                                                form.setFieldValue(
                                                     'startingPrice',
-                                                    value
-                                                ) // Set the numeric value to form state
+                                                    rawValue
+                                                )
                                             }}
                                             className="w-full px-2 h-[36px] border border-secondary-primary rounded-none focus:outline-none focus:ring-2 focus:ring-bidder-primary"
-                                            value={numeral(field.value).format(
-                                                'R0,0.00'
-                                            )} // Use numeral to format the value
                                         />
                                     )}
                                 </Field>
+
                                 <ErrorMessage
                                     name="startingPrice"
                                     component="small"

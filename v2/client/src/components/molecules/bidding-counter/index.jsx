@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
 import TimerIcon from '../../atoms/icons/timer'
 
-const calculateRemainingTime = (endTime) => {
+const calculateRemainingTime = (time) => {
     const now = new Date()
-    const end = new Date(endTime)
+    const end = new Date(time)
     const remaining = end - now
 
     if (remaining < 0) {
@@ -21,64 +20,86 @@ const calculateRemainingTime = (endTime) => {
     return { days, hours, minutes, seconds }
 }
 
-const CountdownTimer = ({ endTime }) => {
-    const [timeLeft, setTimeLeft] = useState(calculateRemainingTime(endTime))
+const CountdownTimer = ({ status, startTime, endTime }) => {
+    const [timeLeft, setTimeLeft] = useState(
+        status === 'coming soon'
+            ? calculateRemainingTime(
+                  new Date(startTime).toLocaleString('en-ZA', {
+                      timeZone: 'Africa/Johannesburg',
+                  })
+              )
+            : calculateRemainingTime(
+                  new Date(endTime).toLocaleString('en-ZA', {
+                      timeZone: 'Africa/Johannesburg',
+                  })
+              )
+    )
 
     useEffect(() => {
         const timerId = setInterval(() => {
-            setTimeLeft(calculateRemainingTime(endTime))
+            const timeToCount = status === 'coming soon' ? startTime : endTime
+            setTimeLeft(
+                calculateRemainingTime(
+                    new Date(timeToCount).toLocaleString('en-ZA', {
+                        timeZone: 'Africa/Johannesburg',
+                    })
+                )
+            )
         }, 1000)
 
         return () => clearInterval(timerId)
-    }, [endTime])
+    }, [status, startTime, endTime])
 
-    if (
+    const isAuctionFinished =
         timeLeft.days === 0 &&
         timeLeft.hours === 0 &&
         timeLeft.minutes === 0 &&
         timeLeft.seconds === 0
-    ) {
-        return <p className="text-red-600">Time is up!</p>
-    }
 
     return (
         <div className="mt-5">
-            <div className="flex items-center">
-                <TimerIcon />
-                <span className="ml-2 text-red-600">Time remaining:</span>
-            </div>
-            <div className="flex space-x-4 mt-2">
-                {timeLeft.days > 0 && (
-                    <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold">
-                            {timeLeft.days}
-                        </span>
-                        <span className="text-sm text-gray-500">Days</span>
-                    </div>
-                )}
-                {timeLeft.hours > 0 && (
-                    <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold">
-                            {timeLeft.hours}
-                        </span>
-                        <span className="text-sm text-gray-500">Hours</span>
-                    </div>
-                )}
-                {timeLeft.minutes > 0 && (
-                    <div className="flex flex-col items-center">
-                        <span className="text-lg font-bold">
-                            {timeLeft.minutes}
-                        </span>
-                        <span className="text-sm text-gray-500">Minutes</span>
-                    </div>
-                )}
-                <div className="flex flex-col items-center">
-                    <span className="text-lg font-bold">
-                        {timeLeft.seconds}
-                    </span>
-                    <span className="text-sm text-gray-500">Seconds</span>
+            {!isAuctionFinished && (
+                <div className="flex items-center">
+                    <TimerIcon />
+                    <span className="ml-2 text-red-600">Time remaining:</span>
                 </div>
-            </div>
+            )}
+            {!isAuctionFinished && (
+                <div className="flex space-x-4 mt-2">
+                    {timeLeft.days > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-bold">
+                                {timeLeft.days}
+                            </span>
+                            <span className="text-sm text-gray-500">Days</span>
+                        </div>
+                    )}
+                    {timeLeft.hours > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-bold">
+                                {timeLeft.hours}
+                            </span>
+                            <span className="text-sm text-gray-500">Hours</span>
+                        </div>
+                    )}
+                    {timeLeft.minutes > 0 && (
+                        <div className="flex flex-col items-center">
+                            <span className="text-lg font-bold">
+                                {timeLeft.minutes}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                Minutes
+                            </span>
+                        </div>
+                    )}
+                    <div className="flex flex-col items-center">
+                        <span className="text-lg font-bold">
+                            {timeLeft.seconds}
+                        </span>
+                        <span className="text-sm text-gray-500">Seconds</span>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

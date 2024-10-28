@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js", 
+    "start": "node index.js",
     "build": "echo 'Nothing to build'"
   },
   "keywords": [],
@@ -21,6 +21,7 @@
     "firebase-admin": "^12.6.0",
     "helmet": "^8.0.0",
     "moment": "^2.30.1",
+    "moment-timezone": "^0.5.46",
     "morgan": "^1.10.0",
     "node-cron": "^3.0.3",
     "socket.io": "^4.8.0",

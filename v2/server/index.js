@@ -1,5 +1,5 @@
 require('dotenv').config();
-require('./src/crons/products/update');
+require('./src/crons/products/updateStatus');
 
 const express = require('express');
 const http = require('http');
@@ -12,6 +12,7 @@ const helmetMiddleware = require('./src/middleware/helmet');
 const login = require('./src/routes/auth/login');
 const logout = require('./src/routes/auth/logout');
 const register = require('./src/routes/auth/register');
+const getToken = require('./src/routes/auth/getToken');
 const createBid = require('./src/routes/bids/create');
 const createProduct = require('./src/routes/products/create');
 const getOneProduct = require('./src/routes/products/getOne');
@@ -22,7 +23,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.CORS_WHITELIST.split(','), 
-    methods: ['GET', 'POST'], 
+    methods: ['GET', 'POST','OPTIONS'], 
     credentials: true, 
   }
 });
@@ -52,6 +53,7 @@ app.use('/api/products', getAllProducts);
 app.use('/api/login', login);
 app.use('/api/logout', logout);
 app.use('/api/register', register);
+app.use('/api/get-token', getToken);
 
 
 // WebSocket connection handling

@@ -1,17 +1,17 @@
-# Bidder - The Fastest Online Bidding App
+# Biddar - The Fastest Online Bidding App
 
-Welcome to **Bidder**, the cutting-edge bidding platform designed to revolutionize the way you bid online! Utilizing the latest technology and state-of-the-art security features, Bidder makes the bidding process easy and safe for everyone.
+Welcome to **Biddar**, the cutting-edge bidding platform designed to revolutionize the way you bid online! Utilizing the latest technology and state-of-the-art security features, Biddar makes the bidding process easy and safe for everyone.
 
-## 🚀 Why Choose Bidder?
+## 🚀 Why Choose Biddar?
 
-At Bidder, we believe in empowering businesses, developers, and even non-technical individuals to take advantage of our platform. That's why we're proud to offer both an API and a user-friendly client, enabling seamless integration into your existing systems—similar to the convenience of platforms like Stripe.
+At Biddar, we believe in empowering businesses, developers, and even non-technical individuals to take advantage of our platform. That's why we're proud to offer both an API and a user-friendly client, enabling seamless integration into your existing systems—similar to the convenience of platforms like Stripe.
 
 ### 🌟 Key Features
 
 
 
 
-- **Easy Embedding**: 🖥️ Share our powerful bidding capabilities on your own website and other platforms, making it simple to integrate Bidder into your online presence.
+- **Easy Embedding**: 🖥️ Share our powerful bidding capabilities on your own website and other platforms, making it simple to integrate Biddar into your online presence.
 
 
 - **Verified Users Only**: ✅ We prioritize a safe bidding environment by ensuring that only verified users with proven purchasing power are allowed to participate.
@@ -30,13 +30,13 @@ At Bidder, we believe in empowering businesses, developers, and even non-technic
 
 ## 🤝 Contributing
 
-We welcome contributions from everyone! If you are interested in helping us improve Bidder, please check out our [CONTRIBUTING.md](./CONTRIBUTING.md) file for guidelines on how to get started.
+We welcome contributions from everyone! If you are interested in helping us improve Biddar, please check out our [CONTRIBUTING.md](./CONTRIBUTING.md) file for guidelines on how to get started.
 
 ## 🔒 Security Measures
 
 We take security seriously! For a detailed overview of the security measures implemented in our project, please refer to our [SECURITY.md](./SECURITY.md).
 
-## Get Started with Bidder!
+## Get Started with Biddar!
 
 Ready to experience the future of bidding? Join us today and transform the way you bid online!
 
