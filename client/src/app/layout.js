@@ -4,7 +4,7 @@ import ProtectedRoute from '../components/template/protectedRoute'
 
 import './globals.css'
 
-const StoreProvider = dynamic(() => import('../app/storeProvider'), {
+const StoreProvider = dynamic(() => import('./storeProvider'), {
     ssr: false,
 })
 
