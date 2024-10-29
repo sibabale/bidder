@@ -1,22 +1,23 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { io } from 'socket.io-client'
+import { Realtime } from 'ably'
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
-
-export const useSocket = () => {
-    const [socket, setSocket] = useState(null)
+export const useSocket = (channelName) => {
+    const [channel, setChannel] = useState(null)
 
     useEffect(() => {
-        const newSocket = io(SOCKET_URL)
-        setSocket(newSocket)
+        const client = new Realtime({ authUrl: '/api/createTokenRequest' })
+
+        client.connection.on('connected', () => {
+            console.log('Connected to Ably')
+            const channelInstance = client.channels.get(channelName)
+            setChannel(channelInstance)
+        })
 
         return () => {
-            // Cleanup on unmount
-            newSocket.disconnect()
+            if (channel) channel.detach()
+            client.close()
         }
-    }, [])
+    }, [channelName])
 
-    return socket
+    return channel
 }

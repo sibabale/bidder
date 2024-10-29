@@ -86,7 +86,6 @@ const CreateAuctionPage = () => {
                         'YYYY-MM-DDTHH:mm:ss'
                     )
 
-                    console.log(selectedDateTime.format())
                     const now = moment()
 
                     return selectedDateTime.isAfter(now.format())
