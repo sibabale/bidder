@@ -3,7 +3,10 @@ require('./src/crons/products/updateStatus');
 
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
+const Ably = require('ably');
+
+// Initialize Ably client
+const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
 
 const morgan = require('./src/middleware/morgan');
 const corsMiddleware = require('./src/middleware/cors');
@@ -20,55 +23,48 @@ const getAllProducts = require('./src/routes/products/getAll');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CORS_WHITELIST.split(','), 
-    methods: ['GET', 'POST','OPTIONS'], 
-    credentials: true, 
-  }
-});
 
 app.use(express.json());
 app.use(morgan); 
 app.use(corsMiddleware); 
 app.use(helmetMiddleware); 
 
+// Attach Ably to the request object
 app.use((req, res, next) => {
-    req.io = io;
+    req.ably = ably;
     next();
 });
 
-// default route
+// Default route
 app.get('/', (req, res) => {
-  res.send('Welcome to the API!');
+    res.send('Welcome to the API!');
 });
 
 // Use routers
 app.use('/api/bids', createBid);
-
 app.use('/api/products', createProduct);
 app.use('/api/products', getOneProduct);
 app.use('/api/products', getAllProducts);
-
 app.use('/api/login', login);
 app.use('/api/logout', logout);
 app.use('/api/register', register);
 app.use('/api/get-token', getToken);
 
+// Real-time communication using Ably
+ably.connection.on('connected', () => {
+    console.log('Ably connected successfully');
+});
 
-// WebSocket connection handling
-io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
+const bidChannel = ably.channels.get('biddar');
 
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
-  });
+bidChannel.subscribe('new-bid', (message) => {
+    console.log('New bid received:', message.data);
 });
 
 // Start the server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
 
 exports.default = app;

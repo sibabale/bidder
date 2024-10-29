@@ -11,8 +11,6 @@ import { Button } from '../../../components/ui/button'
 import CountdownTimer from '../../../components/molecules/bidding-counter'
 
 export default function DetailsPage({ params }) {
-    const socket = useSocket()
-
     const [bids, setBids] = useState([])
     const [activeTab, setActiveTab] = useState('description')
     const [currentBid, setCurrentBid] = useState()
@@ -43,6 +41,8 @@ export default function DetailsPage({ params }) {
         enabled: !!id,
     })
 
+    const channel = useSocket(`auction-${id}`)
+
     useEffect(() => {
         if (data?.highestBid) {
             setCurrentBid(data?.highestBid)
@@ -51,23 +51,21 @@ export default function DetailsPage({ params }) {
     }, [data])
 
     useEffect(() => {
-        if (!socket) return
+        if (!channel) return
 
-        // Listen for new bids from the server
-        const handleNewBid = (bid) => {
+        // Listen for new bids
+        channel.subscribe('new_bid', (message) => {
+            const bid = message.data
             setBids((prevBids) => [...prevBids, bid])
-            console.log('New bid received:', bid)
             setCurrentBid(bid.amount)
             setBiddingPrice(bid.amount)
-        }
+        })
 
-        socket.on('new_bid', handleNewBid)
-
-        // Cleanup the listener when component unmounts
+        // Cleanup when component unmounts
         return () => {
-            socket.off('new_bid', handleNewBid)
+            channel.unsubscribe()
         }
-    }, [socket, biddingPrice])
+    }, [channel])
 
     const handleBidSubmit = async (e) => {
         e.preventDefault()
@@ -92,11 +90,10 @@ export default function DetailsPage({ params }) {
 
             // Emit a WebSocket event if the bid was successful
             if (response.status === 201) {
-                socket.emit('place_bid', bidData) // Notify others about the new bid
+                channel.publish('new_bid', bidData) // Notify others
             }
         } catch (error) {
             console.error('Error placing bid:', error)
-            // Handle error (e.g., show a notification to the user)
         }
     }
 
@@ -161,6 +158,7 @@ export default function DetailsPage({ params }) {
 
                     <div className="mt-6">
                         <small className="text-gray-500">
+                            {data.highestBid}
                             {data.startPrice >= data.highestBid
                                 ? 'Starting bid'
                                 : 'Current Bid'}
