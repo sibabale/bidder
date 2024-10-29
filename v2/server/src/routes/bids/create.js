@@ -2,21 +2,26 @@ const express = require('express');
 const validator = require('validator');
 const { collection, doc, getDoc, arrayUnion, runTransaction } = require('firebase/firestore');
 const rateLimit = require('express-rate-limit');
+const Ably = require('ably');
 
 const db = require('../../../firebase-config'); 
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken'); 
 
+// Initialize Ably client
+const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
+const bidChannel = ably.channels.get('biddar');
+
 const bidLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 5, // Limit each IP to 5 bids per window
+  windowMs: 60 * 1000, 
+  max: 5, 
 });
 
 router.post('/', bidLimiter, verifyToken, async (req, res) => {
   try {
-    const { userId, amount, productId,  } = req.body;
+    const { userId, amount, productId } = req.body;
 
-    // Input validation
+    // Validate input
     if (!productId || !amount) {
       return res.status(400).json({ message: 'All fields are required' });
     }
@@ -27,7 +32,7 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Amount must be a positive number' });
     }
 
-    // Check product existence and fetch its details
+    // Check product existence
     const productRef = doc(db, 'products', productId);
     const productSnap = await getDoc(productRef);
     if (!productSnap.exists()) {
@@ -35,66 +40,53 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
     }
     const productData = productSnap.data();
 
-    // Check if the product is live and within the bidding time
     const now = new Date();
     const startTime = new Date(productData.startTime);
     const endTime = new Date(productData.endTime);
 
-    // Block bidding on certain product statuses
-    if (['cancelled', 'closed', 'coming soon'].includes(productData.status)) {
-      return res.status(400).json({ message: `Bidding is not allowed on ${productData.status} products.` });
+    // Validate bidding time and status
+    if (['cancelled', 'closed', 'coming soon'].includes(productData.status) ||
+        now < startTime || now > endTime) {
+      return res.status(400).json({ message: 'Bidding is not allowed.' });
     }
 
-    // Additional time checks
-    if (now < startTime) {
-      return res.status(400).json({ message: 'Bidding is not allowed before the start time.' });
-    }
-    if (now > endTime) {
-      return res.status(400).json({ message: 'Bidding has ended for this product.' });
-    }
-
-    // Check if the bid amount is greater than the start price
     if (amount <= productData.startPrice) {
-      return res.status(400).json({ message: 'Bid amount must be greater than the starting price' });
+      return res.status(400).json({ message: 'Bid must exceed the starting price.' });
     }
 
-    // Save bid to Firestore and update the product document within a transaction
+    // Create and save bid in Firestore
     const newBid = { productId, userId, amount, timestamp: new Date() };
     const bidsCollection = collection(db, 'bids');
 
-    // Use transaction to ensure atomic operations
     await runTransaction(db, async (transaction) => {
-      // Create a new bid document
-      const bidRef = doc(bidsCollection); // Create a new document reference
-      transaction.set(bidRef, newBid); // Set the new bid document
+      const bidRef = doc(bidsCollection); 
+      transaction.set(bidRef, newBid); 
 
-      // Update the product document with the new bid ID
       transaction.update(productRef, {
         bids: arrayUnion(bidRef.id),
       });
 
-      // Update highest bid amount if the new bid is greater than the current highest bid amount
       const currentHighestBid = productData.highestBid || productData.startPrice;
-
       if (amount > currentHighestBid) {
-        // Update the highest bid amount
-        transaction.update(productRef, {
-          highestBid: amount,
-        });
+        transaction.update(productRef, { highestBid: amount });
       } else {
-        // Throw an error if the bid is not higher than the current highest bid
-        throw new Error('Bid amount must be higher than the current highest bid amount');
+        throw new Error('Bid must exceed the current highest bid.');
       }
     });
 
-    // Broadcast new bid over WebSocket
-    req.io.emit('new_bid', { ...newBid });
+    // Publish new bid event via Ably
+    bidChannel.publish('new-bid', newBid, (err) => {
+      if (err) {
+        console.error('Failed to publish bid:', err);
+        return res.status(500).json({ message: 'Failed to notify bid event' });
+      }
+      console.log('Bid event published successfully:', newBid);
+    });
 
     res.status(201).json({ message: 'Bid placed successfully' });
   } catch (error) {
     console.error('Error placing bid:', error);
-    // Check if the error is due to bid being too low
-    if (error.message === 'Bid amount must be higher than the current highest bid amount') {
+    if (error.message === 'Bid must exceed the current highest bid.') {
       return res.status(400).json({ message: error.message });
     }
     res.status(500).json({ message: 'Failed to place bid' });
