@@ -4,6 +4,7 @@ const admin = require('../../config/firebase-admin');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
+    
     const firebaseToken = req.headers.authorization?.split('Bearer ')[1];
     
     try {
