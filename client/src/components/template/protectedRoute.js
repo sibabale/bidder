@@ -10,6 +10,7 @@ const ProtectedRoute = ({ children }) => {
         const token = localStorage.getItem('biddar')
 
         const authRoutes = [
+            '/',
             '/auth/login',
             '/auth/register',
             '/auth/reset-password',

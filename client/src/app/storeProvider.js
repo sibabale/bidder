@@ -10,7 +10,10 @@ import { store, persistor } from '../lib/store'
 import useTokenChecker from '../hooks/useTokenChecker'
 
 export default function StoreProvider({ children }) {
-    useTokenChecker()
+    const token = localStorage.getItem('biddar')
+    if (token) {
+        useTokenChecker()
+    }
     const queryClient = new QueryClient()
     const client = new Ably.Realtime({
         authUrl: '/api/createTokenRequest',

@@ -155,7 +155,7 @@ const CreateAuctionPage = () => {
 
             const imageUrl = await handleUploadImage(values.image)
 
-            await fetch(`${baseURL}/api/products`, {
+            const repsonse = await fetch(`${baseURL}/api/products`, {
                 method: 'POST',
                 body: JSON.stringify({
                     title: values.title,
@@ -174,7 +174,9 @@ const CreateAuctionPage = () => {
                     'Content-Type': 'application/json',
                 },
             })
-            router.replace('/auctions')
+            if (repsonse.status === 201) {
+                router.replace('/auctions')
+            }
         } catch (err) {
             console.error('Unexpected error:', err)
             setError('An unexpected error occurred. Please try again.')

@@ -41,13 +41,12 @@ const SignUpPage = () => {
 
             return axios.post(`${BASE_URL}/api/register`, values)
         },
-        onSuccess: () => {
-            localStorage.setItem('biddar', response.data.user.firebaseToken)
+        onSuccess: (user) => {
+            localStorage.setItem('biddar', user.data.firebaseToken)
             router.replace('/auctions')
         },
         onError: (error) => {
             console.log(error)
-
             if (error.response) {
                 console.error('Server Error:', error.response.data)
                 setAuthError(error.response.data.message)
@@ -84,7 +83,6 @@ const SignUpPage = () => {
                             onSubmit={(values, { setSubmitting }) => {
                                 mutate(values, {
                                     onSuccess: () => {
-                                        router.replace('/welcome')
                                         setSubmitting(false)
                                     },
                                     onError: (error) => {

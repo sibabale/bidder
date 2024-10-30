@@ -57,9 +57,9 @@ export default function Header() {
                                 Auctions
                             </span>
                         </Link>
-                        <Link href="/insights">
+                        <Link href="/feedback">
                             <span className="text-gray-700 hover:text-bidder-primary">
-                                Insights
+                                Feedback
                             </span>
                         </Link>
                     </div>
@@ -99,9 +99,9 @@ export default function Header() {
                             Auctions
                         </span>
                     </Link>
-                    <Link href="/insights" className="">
+                    <Link href="/feedback" className="">
                         <span className="block mb-5 border-b  text-gray-700 hover:text-blue-600">
-                            Insights
+                            Feedback
                         </span>
                     </Link>
                     <Link href="/auctions/create">
