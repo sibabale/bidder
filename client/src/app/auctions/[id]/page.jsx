@@ -158,9 +158,12 @@ export default function DetailsPage({ params }) {
 
                     <div className="mt-6">
                         <small className="text-gray-500">
-                            {data.startPrice >= data.highestBid
-                                ? 'Starting bid'
-                                : 'Current Bid'}
+                            {data.status === 'closed' ||
+                            data.status === 'cancelled'
+                                ? 'Closing Bid'
+                                : data.startPrice >= data.highestBid
+                                  ? 'Starting Bid'
+                                  : 'Current Bid'}
                         </small>
                         <p className="text-2xl md:text-3xl lg:text-2xl text-black font-bold mt-1">
                             R{numeral(currentBid).format('R0,0.00')}{' '}
