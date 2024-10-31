@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import axios from 'axios'
 import * as Yup from 'yup'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { useMutation } from '@tanstack/react-query'
@@ -15,8 +16,10 @@ import { login } from '../../../lib/store/slices/user/index'
 import PromotionBlob from '../../../components/molecules/promotion-blob'
 
 const SignInPage = () => {
-    const dispatch = useDispatch()
     const router = useRouter()
+    const dispatch = useDispatch()
+
+    const [authError, setAuthError] = useState()
 
     const validationSchema = Yup.object().shape({
         email: Yup.string()
@@ -52,8 +55,20 @@ const SignInPage = () => {
             router.replace('/auctions')
         },
         onError: (error) => {
-            console.error(error)
-            setError('Failed to log in. Please try again.')
+            if (error.response) {
+                setAuthError(
+                    error.response.data.message ||
+                        (error.response.data.errors
+                            ? error.response.data.errors[0].msg
+                            : 'Unknown error')
+                )
+            } else if (error.request) {
+                console.error('Network Error:', error.request)
+                setAuthError('Network error, please try again later.')
+            } else {
+                console.error('Error:', error.message)
+                setAuthError(error.message)
+            }
         },
     })
 
@@ -76,7 +91,9 @@ const SignInPage = () => {
                         </h1>
 
                         <Alert
-                            message={error?.message || ''}
+                            message={
+                                authError || 'An unexpected error occurred'
+                            }
                             isVisible={!!error}
                         />
 

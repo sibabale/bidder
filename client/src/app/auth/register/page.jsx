@@ -46,14 +46,7 @@ const SignUpPage = () => {
             router.replace('/auctions')
         },
         onError: (error) => {
-            console.error(error)
             if (error.response) {
-                console.error(
-                    'I am error:',
-                    error.response.data.errors
-                        ? error.response.data.errors[0].msg
-                        : 'An unexpected error occured, please try again.'
-                )
                 setAuthError(
                     error.response.data.message ||
                         (error.response.data.errors
