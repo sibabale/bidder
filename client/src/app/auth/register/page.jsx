@@ -13,6 +13,8 @@ import Button from '../../../components/atoms/button/button'
 import TextInput from '../../../components/atoms/text-input'
 import PromotionBlob from '../../../components/molecules/promotion-blob'
 
+import BGImage from '../../../assests/images/bg.png'
+
 const SignUpPage = () => {
     const router = useRouter()
     const [authError, setAuthError] = useState()
@@ -175,7 +177,7 @@ const SignUpPage = () => {
                         <p className="meta_text">
                             Already have an account?
                             <Link
-                                href="/login"
+                                href="/auth/login"
                                 className="ml-2 text-bidder-primary"
                             >
                                 Login
@@ -183,13 +185,13 @@ const SignUpPage = () => {
                         </p>
                     </div>
                 </div>
-                <div className="item_two p-5 w-full sm:w-1/2 hidden sm:flex sm:flex-col justify-center bg-orange-500">
+                <div
+                    className={`item_two p-5 w-full sm:w-1/2 hidden sm:flex sm:flex-col justify-center bg-orange-500 bg-cover bg-center bg-[url(/images/bg.png)]`}
+                >
                     <div className="blob">
                         <PromotionBlob
-                            heading="We gather fruitful data about your customers"
-                            subHeading="Create a free account and get full access to all features
-                            for 30 days. No credit card needed. Trusted by over 4,000
-                            retailers."
+                            heading="Sell to the highest biddar"
+                            subHeading="Create a free account and get full access to all features"
                         />
                     </div>
                 </div>

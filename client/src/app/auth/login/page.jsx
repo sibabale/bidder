@@ -178,7 +178,7 @@ const SignInPage = () => {
                     </div>
                 </div>
 
-                <div className="p-5 w-full sm:w-1/2 hidden sm:flex sm:flex-col justify-center bg-orange-500">
+                <div className="p-5 w-full sm:w-1/2 hidden sm:flex sm:flex-col justify-center bg-orange-500 bg-cover bg-center  bg-[url(/images/bg.png)]">
                     <div className="blob">
                         <PromotionBlob
                             blurry

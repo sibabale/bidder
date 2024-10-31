@@ -9,12 +9,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 import { Button } from '../../../components/ui/button'
 import CountdownTimer from '../../../components/molecules/bidding-counter'
+import { loggedInUser } from '../../../lib/store/selectors/user'
 
 export default function DetailsPage({ params }) {
     const [bids, setBids] = useState([])
     const [activeTab, setActiveTab] = useState('description')
     const [currentBid, setCurrentBid] = useState()
     const [biddingPrice, setBiddingPrice] = useState()
+
+    const user = useSelector(loggedInUser)
 
     const { id } = params
 
@@ -72,7 +75,7 @@ export default function DetailsPage({ params }) {
 
         // Construct the bid object
         const bidData = {
-            userId: 'Bv2HMmL2NANdxUaLHzLbnl6lYOy1', // Get this from your auth context or state
+            userId: user.userId, // Get this from your auth context or state
             amount: Number(biddingPrice),
             productId: id,
         }
