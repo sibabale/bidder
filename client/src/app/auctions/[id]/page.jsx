@@ -255,12 +255,7 @@ export default function DetailsPage({ params }) {
                                     exit={{ opacity: 0, height: 0 }}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <h3 className="font-semibold mt-4">
-                                        {data.seller?.name}
-                                    </h3>
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        {data.seller?.email}
-                                    </p>
+                                    <h3 className="font-bold">Coming soon</h3>
                                 </motion.div>
                             )}
                         </AnimatePresence>
