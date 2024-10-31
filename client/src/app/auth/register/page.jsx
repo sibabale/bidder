@@ -46,13 +46,23 @@ const SignUpPage = () => {
             router.replace('/auctions')
         },
         onError: (error) => {
-            console.log(error)
+            console.error(error)
             if (error.response) {
-                console.error('Server Error:', error.response.data)
-                setAuthError(error.response.data.message)
+                console.error(
+                    'I am error:',
+                    error.response.data.errors
+                        ? error.response.data.errors[0].msg
+                        : 'An unexpected error occured, please try again.'
+                )
+                setAuthError(
+                    error.response.data.message ||
+                        (error.response.data.errors
+                            ? error.response.data.errors[0].msg
+                            : 'Unknown error')
+                )
             } else if (error.request) {
                 console.error('Network Error:', error.request)
-                setAuthError(error.request)
+                setAuthError('Network error, please try again later.')
             } else {
                 console.error('Error:', error.message)
                 setAuthError(error.message)
@@ -172,7 +182,7 @@ const SignUpPage = () => {
                         <p className="meta_text">
                             Already have an account?
                             <Link
-                                href="/signin"
+                                href="/login"
                                 className="ml-2 text-bidder-primary"
                             >
                                 Login
