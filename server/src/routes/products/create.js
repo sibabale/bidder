@@ -125,7 +125,7 @@ router.post(
         startTime: startDateTime.toISOString(),
         timestamp: new Date(),
         startPrice: parseFloat(startPrice),
-        highetstBid: parseFloat(startPrice),
+        highestBid: parseFloat(startPrice),
         description,
       };
 
