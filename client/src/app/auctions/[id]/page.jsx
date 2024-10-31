@@ -266,7 +266,7 @@ export default function DetailsPage({ params }) {
             </div>
 
             {/* Bids History */}
-            <div className="mt-6">
+            {/* <div className="mt-6">
                 <h2 className="text-lg font-semibold">Bids History</h2>
                 <ul className="mt-4 space-y-2">
                     {bids.map((bid, index) => (
@@ -278,7 +278,7 @@ export default function DetailsPage({ params }) {
                         </li>
                     ))}
                 </ul>
-            </div>
+            </div> */}
         </div>
     )
 }
