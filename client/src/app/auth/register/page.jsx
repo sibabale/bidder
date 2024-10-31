@@ -72,7 +72,7 @@ const SignUpPage = () => {
 
     return (
         <div className="h-screen">
-            <div className="p-5 absolute">
+            <div className="p-5 md:absolute">
                 <Link href="/" className="flex items-center">
                     <div className="h-10 w-10 bg-bidder-primary rounded-full"></div>
                     <h1 className="ml-3 text-black text-2xl font-bold">
