@@ -13,8 +13,6 @@ import Button from '../../../components/atoms/button/button'
 import TextInput from '../../../components/atoms/text-input'
 import PromotionBlob from '../../../components/molecules/promotion-blob'
 
-import BGImage from '../../../assests/images/bg.png'
-
 const SignUpPage = () => {
     const router = useRouter()
     const [authError, setAuthError] = useState()
