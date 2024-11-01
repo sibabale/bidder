@@ -4,6 +4,7 @@ import Image from 'next/image'
 import numeral from 'numeral'
 import { useQuery } from '@tanstack/react-query'
 import { useSocket } from '../../../hooks/useSocket'
+import { useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -155,7 +156,7 @@ export default function DetailsPage({ params }) {
                             )}
                         </div>
                         <h3 className="text-sm md:text-base text-gray-500 font-semibold mt-2">
-                            Lorem ipsum dolor sit amet
+                            {data.subTitle}
                         </h3>
                     </div>
 

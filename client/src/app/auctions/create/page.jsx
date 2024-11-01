@@ -14,6 +14,7 @@ import {
     PopoverTrigger,
 } from '../../../components/ui/popover'
 import Alert from '../../../components/atoms/alert'
+import TextArea from '../../../components/atoms/text-area/text-area'
 import TextInput from '../../../components/atoms/text-input'
 import { format } from 'date-fns'
 import { app } from '../../../config/index'
@@ -199,6 +200,28 @@ const CreateAuctionPage = () => {
                 >
                     {({ isSubmitting, setFieldValue }) => (
                         <Form>
+                            <div className="my-2 flex flex-col">
+                                <label className="text_input_label">
+                                    Image <sup>*</sup>
+                                </label>
+                                <input
+                                    name="image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(event) => {
+                                        setFieldValue(
+                                            'image',
+                                            event.currentTarget.files[0]
+                                        )
+                                    }}
+                                    required
+                                />
+                                <ErrorMessage
+                                    name="image"
+                                    component="small"
+                                    className="text-red-400"
+                                />
+                            </div>
                             <div className="my-2">
                                 <Field
                                     name="title"
@@ -235,7 +258,7 @@ const CreateAuctionPage = () => {
                                 <Field
                                     name="description"
                                     type="text"
-                                    as={TextInput}
+                                    as={TextArea}
                                     label="Description"
                                     required={true}
                                     disabled={isLoading || isSubmitting}
@@ -409,9 +432,11 @@ const CreateAuctionPage = () => {
                             <div className="my-2">
                                 <Field name="startingPrice">
                                     {({ field, form }) => (
-                                        <input
+                                        <TextInput
                                             {...field}
+                                            label="Starting Price"
                                             type="text"
+                                            required={true}
                                             inputMode="decimal"
                                             placeholder="Enter price"
                                             value={`R${field.value ? Number(field.value).toLocaleString('en-ZA') : ''}`} // Format value with thousands separator
@@ -438,29 +463,9 @@ const CreateAuctionPage = () => {
                                 />
                             </div>
 
-                            <div className="my-2">
-                                <input
-                                    name="image"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(event) => {
-                                        setFieldValue(
-                                            'image',
-                                            event.currentTarget.files[0]
-                                        )
-                                    }}
-                                    required
-                                />
-                                <ErrorMessage
-                                    name="image"
-                                    component="small"
-                                    className="text-red-400"
-                                />
-                            </div>
-
                             <Button
                                 type="submit"
-                                className="w-full bg-bidder-primary"
+                                className="mt-5 w-full bg-bidder-primary"
                                 disabled={isLoading || isSubmitting}
                             >
                                 {isLoading || isSubmitting

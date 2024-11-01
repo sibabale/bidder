@@ -13,6 +13,7 @@ import Alert from '../../../components/molecules/alert'
 import Button from '../../../components/atoms/button/button'
 import TextInput from '../../../components/atoms/text-input'
 import { login } from '../../../lib/store/slices/user/index'
+import PasswordInput from '../../../components/atoms/password-input/password-input'
 import PromotionBlob from '../../../components/molecules/promotion-blob'
 
 const SignInPage = () => {
@@ -132,8 +133,7 @@ const SignInPage = () => {
                                     <div className="text_input_wrapper">
                                         <Field
                                             name="password"
-                                            type="password"
-                                            as={TextInput}
+                                            as={PasswordInput}
                                             label="Password"
                                             required
                                             disabled={isPending || isSubmitting}
