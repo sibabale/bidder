@@ -17,9 +17,9 @@ export default function Header() {
     const dispatch = useDispatch()
     const [menuOpen, setMenuOpen] = useState(false)
 
+    const token = localStorage.getItem('biddar')
     const { error, mutateAsync, isPending } = useMutation({
         mutationFn: async () => {
-            const token = localStorage.getItem('biddar')
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
             await axios.post(
                 `${BASE_URL}/logout`,
@@ -71,11 +71,15 @@ export default function Header() {
                         >
                             Sell
                         </Link>
-                        <Button
-                            text="Logout"
-                            onClick={mutateAsync}
-                            className="hidden shadow-none md:block bg-white cursor-pointer hover:bg-red-400 hover:text-white hover:shadow-md border border-red-400 text-red-400 px-4 py-2 ml-2"
-                        />
+                        {token && (
+                            <Button
+                                text="Logout"
+                                onClick={mutateAsync}
+                                disabled={isPending}
+                                isLoading={isPending}
+                                className="hidden shadow-none md:block bg-white cursor-pointer hover:bg-red-400 hover:text-white hover:shadow-md border border-red-400 text-red-400 px-4 py-2 ml-2"
+                            />
+                        )}
                     </div>
 
                     <div className="md:hidden ">
@@ -109,11 +113,15 @@ export default function Header() {
                             Sell
                         </span>
                     </Link>
-                    <Button
-                        text="Logout"
-                        onClick={mutateAsync}
-                        className="block w-full bg-white hover:bg-red-400 border border-red-400 text-red-400 hover:text-white shadow-none mt-5 px-4 py-2 text-center"
-                    />
+                    {token && (
+                        <Button
+                            text="Logout"
+                            onClick={mutateAsync}
+                            disabled={isPending}
+                            isLoading={isPending}
+                            className="block w-full bg-white hover:bg-red-400 border border-red-400 text-red-400 hover:text-white shadow-none mt-5 px-4 py-2 text-center"
+                        />
+                    )}
                 </div>
             )}
         </header>
