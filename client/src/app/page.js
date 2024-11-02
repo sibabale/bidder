@@ -2,6 +2,7 @@ import 'lazysizes'
 import 'lazysizes/plugins/attrchange/ls.attrchange'
 import Header from '../components/molecules/header/header'
 import NorthEastArrowIcon from '../components/atoms/icons/north-east-arrow'
+import Link from 'next/link'
 
 export default function Home() {
     return (
@@ -44,15 +45,17 @@ export default function Home() {
 
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                         {[1, 2, 3, 4, 5].map((num) => (
-                            <img
-                                key={num}
-                                data-sizes="auto"
-                                data-src={`/images/products/product-${num}.png`}
-                                data-srcset={`/images/products/product-${num}.png 300w`}
-                                className="lazyload w-full max-w-md"
-                                alt={`Product ${num} for Biddar`}
-                                loading="lazy"
-                            />
+                            <Link href="/auth/login">
+                                <img
+                                    key={num}
+                                    data-sizes="auto"
+                                    data-src={`/images/products/product-${num}.png`}
+                                    data-srcset={`/images/products/product-${num}.png 300w`}
+                                    className="lazyload w-full max-w-md"
+                                    alt={`Product ${num} for Biddar`}
+                                    loading="lazy"
+                                />
+                            </Link>
                         ))}
                     </div>
                 </div>
