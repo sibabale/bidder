@@ -15,9 +15,9 @@ const useTokenChecker = () => {
     }
 
     const logout = async () => {
-        const token = localStorage.getItem('biddar')
         const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
         try {
+            const token = await localStorage.getItem('biddar')
             await axios.post(
                 `${baseURL}/logout`,
                 {},
@@ -35,11 +35,6 @@ const useTokenChecker = () => {
     }
 
     useEffect(() => {
-        const token = localStorage.getItem('biddar')
-        if (isTokenExpired(token)) {
-            logout()
-        }
-
         const interval = setInterval(() => {
             const token = localStorage.getItem('biddar')
             if (isTokenExpired(token)) {

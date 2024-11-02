@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
   
           const decodedToken = jwt.decode(token);
           const exp = decodedToken?.exp;
-  
+
           if (!exp) {
               return res.status(400).json({ message: 'Invalid token' });
           }
