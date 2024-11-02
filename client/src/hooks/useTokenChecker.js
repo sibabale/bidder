@@ -37,14 +37,12 @@ const useTokenChecker = () => {
     useEffect(() => {
         const token = localStorage.getItem('biddar')
         if (isTokenExpired(token)) {
-            localStorage.removeItem('biddar')
             logout()
         }
 
         const interval = setInterval(() => {
             const token = localStorage.getItem('biddar')
             if (isTokenExpired(token)) {
-                localStorage.removeItem('biddar')
                 logout()
             }
         }, 60000)
