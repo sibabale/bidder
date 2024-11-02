@@ -1,8 +1,7 @@
-import 'lazysizes'
-import 'lazysizes/plugins/attrchange/ls.attrchange'
+import Link from 'next/link'
+
 import Header from '../components/molecules/header/header'
 import NorthEastArrowIcon from '../components/atoms/icons/north-east-arrow'
-import Link from 'next/link'
 
 export default function Home() {
     return (
@@ -37,11 +36,16 @@ export default function Home() {
                 </div>
 
                 <div className="mt-10 w-full bg-gray-100 p-3 md:p-5">
-                    <h4 className="text-xl font-semibold">Manzio</h4>
-                    <button className="mt-3 p-3 flex items-center">
-                        <span className="mr-2">See more</span>
-                        <NorthEastArrowIcon />
-                    </button>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between">
+                        <h4 className="text-xl font-semibold">Manzio</h4>
+                        <Link
+                            href="auth/login"
+                            className="my-3 flex items-center md:flex-row outline-none cursor-pointer"
+                        >
+                            <span className="mr-2">See more</span>
+                            <NorthEastArrowIcon />
+                        </Link>
+                    </div>
 
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                         {[1, 2, 3, 4, 5].map((num) => (
