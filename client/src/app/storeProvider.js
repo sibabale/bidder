@@ -9,6 +9,9 @@ import { AblyProvider, ChannelProvider } from 'ably/react'
 import { store, persistor } from '../lib/store'
 import useTokenChecker from '../hooks/useTokenChecker'
 
+import 'lazysizes'
+import 'lazysizes/plugins/parent-fit/ls.parent-fit'
+
 export default function StoreProvider({ children }) {
     const token = localStorage.getItem('biddar')
     if (token) {
