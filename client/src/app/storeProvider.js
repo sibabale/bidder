@@ -14,9 +14,7 @@ import 'lazysizes/plugins/parent-fit/ls.parent-fit'
 
 export default function StoreProvider({ children }) {
     const token = localStorage.getItem('biddar')
-    if (token) {
-        useTokenChecker()
-    }
+    useTokenChecker()
     const queryClient = new QueryClient()
     const client = new Ably.Realtime({
         authUrl: '/api/createTokenRequest',

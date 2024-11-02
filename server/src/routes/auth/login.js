@@ -1,3 +1,4 @@
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const { doc, getDoc} = require('firebase/firestore');
@@ -7,7 +8,6 @@ const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
 const db = require('../../../firebase-config');
 const router = express.Router();
 
-// Handle user login
 router.post('/', [
     body('email').isEmail().withMessage('Please provide a valid email address.'),
     body('password').notEmpty().withMessage('Password is required.'),

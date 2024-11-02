@@ -1,31 +1,30 @@
-const admin = require('../../config/firebase-admin');
+
+const jwt = require('jsonwebtoken');
+const redisClient = require('../../config/redis-client');
 
 const verifyToken = async (req, res, next) => {
-  const token = req.headers.authorization?.split('Bearer ')[1]; 
-  if (!token) {
-    return res.status(401).json({ message: 'Authorization token is missing' });
-  }
+    try {
+        const token = req.headers.authorization?.split('Bearer ')[1];
 
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided' });
+        }
 
-    // Current time in seconds
-    const currentTime = Math.floor(Date.now() / 1000); 
+        // Check if token is in the blacklist
+        const isBlacklisted = await redisClient.get(token);
 
-    // Check if the token is expired
-    if (decodedToken.exp < currentTime) {
-      // Log the user out by revoking refresh tokens
-      await admin.auth().revokeRefreshTokens(decodedToken.uid);
+        if (isBlacklisted) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
 
-      return res.status(401).json({ message: 'Token has expired. User has been logged out.' });
+        // Verify token
+        jwt.verify(token, process.env.JWT_SECRET);
+        next();
+    } catch (error) {
+        console.error('Authorization error:', error);
+        res.status(403).json({ message: 'Unauthorized' });
     }
-
-    req.userId = decodedToken.uid; // Attach user ID to request
-    next(); // Proceed to next middleware/handler
-  } catch (error) {
-    console.error('Error verifying token:', error);
-    res.status(401).json({ message: 'Token has expired. User has been logged out.' });
-  }
 };
 
 module.exports = verifyToken;
+
