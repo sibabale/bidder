@@ -16,7 +16,7 @@ export default function StoreProvider({ children }) {
     }
     const queryClient = new QueryClient()
     const client = new Ably.Realtime({
-        authUrl: '/createTokenRequest',
+        authUrl: '/api/createTokenRequest',
     })
 
     return (

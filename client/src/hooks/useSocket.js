@@ -5,7 +5,7 @@ export const useSocket = (channelName) => {
     const [channel, setChannel] = useState(null)
 
     useEffect(() => {
-        const client = new Realtime({ authUrl: '/createTokenRequest' })
+        const client = new Realtime({ authUrl: '/api/createTokenRequest' })
 
         client.connection.on('connected', () => {
             console.log('Connected to Ably')
