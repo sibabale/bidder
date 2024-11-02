@@ -39,7 +39,7 @@ const SignInPage = () => {
     const { error, mutate, isPending } = useMutation({
         mutationFn: async (values) => {
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
-            const response = await axios.post(`${BASE_URL}/api/login`, values)
+            const response = await axios.post(`${BASE_URL}/login`, values)
 
             localStorage.setItem('biddar', response.data.firebaseToken)
             return response.data.user

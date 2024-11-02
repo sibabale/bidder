@@ -14,7 +14,7 @@ export default function AuctionsPage() {
 
         const fetchAuctions = async () => {
             try {
-                const response = await fetch(`${basURL}/api/products`, {
+                const response = await fetch(`${basURL}/products`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

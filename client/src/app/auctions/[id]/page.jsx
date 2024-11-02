@@ -26,7 +26,7 @@ export default function DetailsPage({ params }) {
     const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
 
     async function fetchProductDetails(id) {
-        const response = await fetch(`${baseURL}/api/products/${id}`, {
+        const response = await fetch(`${baseURL}/products/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export default function DetailsPage({ params }) {
 
         try {
             // Make an HTTP POST request to your REST API
-            const response = await fetch(`${baseURL}/api/bids`, {
+            const response = await fetch(`${baseURL}/bids`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

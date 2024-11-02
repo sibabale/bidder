@@ -156,7 +156,7 @@ const CreateAuctionPage = () => {
 
             const imageUrl = await handleUploadImage(values.image)
 
-            const repsonse = await fetch(`${baseURL}/api/products`, {
+            const repsonse = await fetch(`${baseURL}/products`, {
                 method: 'POST',
                 body: JSON.stringify({
                     title: values.title,

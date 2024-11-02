@@ -39,7 +39,7 @@ const SignUpPage = () => {
         mutationFn: (values) => {
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
 
-            return axios.post(`${BASE_URL}/api/register`, values)
+            return axios.post(`${BASE_URL}/register`, values)
         },
         onSuccess: (user) => {
             localStorage.setItem('biddar', user.data.firebaseToken)

@@ -22,7 +22,7 @@ export default function Header() {
             const token = localStorage.getItem('biddar')
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
             await axios.post(
-                `${BASE_URL}/api/logout`,
+                `${BASE_URL}/logout`,
                 {},
                 {
                     headers: {
