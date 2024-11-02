@@ -41,7 +41,7 @@ const SignInPage = () => {
             const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
             const response = await axios.post(`${BASE_URL}/login`, values)
 
-            localStorage.setItem('biddar', response.data.firebaseToken)
+            localStorage.setItem('biddar', response.data.jwtToken)
             return response.data.user
         },
         onSuccess: (user) => {

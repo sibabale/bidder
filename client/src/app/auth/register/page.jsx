@@ -42,7 +42,7 @@ const SignUpPage = () => {
             return axios.post(`${BASE_URL}/register`, values)
         },
         onSuccess: (user) => {
-            localStorage.setItem('biddar', user.data.firebaseToken)
+            localStorage.setItem('biddar', user.data.jwtToken)
             router.replace('/auctions')
         },
         onError: (error) => {
