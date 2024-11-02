@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const { doc, getDoc} = require('firebase/firestore');
 const { validationResult, body } = require('express-validator');
@@ -22,7 +23,6 @@ router.post('/', [
         const auth = getAuth();
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        const firebaseToken = await user.getIdToken();
 
         const userDocRef = doc(db, 'users', user.uid); 
         const userDoc = await getDoc(userDocRef);
@@ -31,6 +31,12 @@ router.post('/', [
             return res.status(404).json({ message: 'User not found in the database.' });
         }
 
+        const jwtToken = jwt.sign(
+            { uid: user.uid, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
         const userData = userDoc.data();
 
         res.status(200).json({ message: 'Login successful', user: {
@@ -38,7 +44,7 @@ router.post('/', [
             userId: user.uid,
             firstName: userData.firstName,
             lastName: userData.lastName,
-        }, firebaseToken });
+        }, jwtToken });
 
     } catch (error) {
         console.error('Error logging in user:', error);
@@ -46,6 +52,8 @@ router.post('/', [
             return res.status(401).json({ message: 'Invalid password. Please try again.' });
         } else if (error.code === 'auth/user-not-found') {
             return res.status(404).json({ message: 'No user found with this email.' });
+        } else if (error.code === 'auth/invalid-credential') {
+            return res.status(404).json({ message: 'Invalid email or password.' });
         } else {
             return res.status(500).json({ message: 'Failed to log in user', error: error.message });
         }

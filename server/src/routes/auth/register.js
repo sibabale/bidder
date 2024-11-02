@@ -1,4 +1,4 @@
-const admin = require('firebase-admin');
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const { doc, setDoc } = require('firebase/firestore');
@@ -42,12 +42,19 @@ router.post('/', registerLimiter, [
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         
         const user = userCredential.user;
-        const firebaseToken = await user.getIdToken();
 
         if (!user.uid) {
             throw new Error('User ID is not available');
         }
         
+
+
+        const jwtToken = jwt.sign(
+            { uid: user.uid, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
         const { uid, metadata } = user;
         const { creationTime, lastSignInTime } = metadata;
 
@@ -61,10 +68,10 @@ router.post('/', registerLimiter, [
             creationTime,
             emailVerified: false,
             lastSignInTime,
-            firebaseToken
+            jwtToken
         });
 
-        res.status(201).json({ message: 'User registered successfully', userId: uid, firebaseToken });
+        res.status(201).json({ message: 'User registered successfully', userId: uid, jwtToken });
     } catch (error) {
         console.error('Error registering user:', error);
         res.status(500).json({ message: 'Failed to register user', error: error.message });
