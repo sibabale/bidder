@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode'
 
 const useTokenChecker = () => {
     const router = useRouter()
-    const token = localStorage.getItem('biddar')
+
     const isTokenExpired = (token) => {
         if (!token) return true
         const decoded = jwtDecode(token)
@@ -13,11 +13,13 @@ const useTokenChecker = () => {
         const twoMinutesBeforeExpiration = expirationTime - 2 * 60 * 1000
         return twoMinutesBeforeExpiration < Date.now()
     }
-    const logout = async (token) => {
+
+    const logout = async () => {
+        const token = localStorage.getItem('biddar')
         const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
         try {
             await axios.post(
-                `${baseURL}/auth/logout`,
+                `${baseURL}/logout`,
                 {},
                 {
                     headers: {
@@ -28,19 +30,26 @@ const useTokenChecker = () => {
             localStorage.removeItem('biddar')
             router.replace('/auth/login')
         } catch (error) {
-            console.error(error)
+            console.error('Error during logout:', error)
         }
     }
+
     useEffect(() => {
+        const token = localStorage.getItem('biddar')
         if (isTokenExpired(token)) {
-            logout(token)
+            localStorage.removeItem('biddar')
+            logout()
         }
+
         const interval = setInterval(() => {
+            const token = localStorage.getItem('biddar')
             if (isTokenExpired(token)) {
-                logout(token) // Make sure to pass the token to logout
+                localStorage.removeItem('biddar')
+                logout()
             }
-        }, 60000) // Check every minute
-        return () => clearInterval(interval) // Cleanup on unmount
+        }, 60000)
+
+        return () => clearInterval(interval)
     }, [router])
 }
 
