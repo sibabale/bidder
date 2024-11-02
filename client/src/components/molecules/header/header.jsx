@@ -66,7 +66,7 @@ export default function Header() {
 
                     <div className="flex">
                         <Link
-                            href="/auctions/create"
+                            href={token ? '/auctions/create' : '/auth/login'}
                             className="hidden md:block bg-primary text-white px-4 py-2"
                         >
                             Sell
@@ -108,7 +108,7 @@ export default function Header() {
                             Feedback
                         </span>
                     </Link>
-                    <Link href="/auctions/create">
+                    <Link href={token ? '/auctions/create' : '/auth/login'}>
                         <span className="block bg-primary text-white px-4 py-2 text-center">
                             Sell
                         </span>
