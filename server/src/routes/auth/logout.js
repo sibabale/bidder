@@ -13,11 +13,8 @@ router.post('/', async (req, res) => {
           }
   
           // Calculate TTL as the difference between expiration time and current time
-          const ttl = exp - Math.floor(Date.now() / 1000);
+          const ttl = 500;
   
-          if (ttl <= 0) {
-              return res.status(400).json({ message: 'Token already expired' });
-          }
   
           // Set the token in Redis with a TTL
           await redisClient.setex(token, ttl, 'blacklisted').catch((err) => {
