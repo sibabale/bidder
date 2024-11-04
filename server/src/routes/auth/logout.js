@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken'); 
 const express = require('express');
 const redisClient = require('../../config/redis-client');
 
@@ -11,13 +10,6 @@ router.post('/', async (req, res) => {
 
           if (!token) {
               return res.status(401).json({ message: 'No token provided' });
-          }
-  
-          const decodedToken = jwt.decode(token);
-          const exp = decodedToken?.exp;
-
-          if (!exp) {
-              return res.status(400).json({ message: 'Invalid token' });
           }
   
           // Calculate TTL as the difference between expiration time and current time
