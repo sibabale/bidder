@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 import { Button } from '../../../components/ui/button'
 import CountdownTimer from '../../../components/molecules/bidding-counter'
+import ProductDetails from '../../../components/organisms/product-details/product-details'
 import { loggedInUser } from '../../../lib/store/selectors/user'
 
 export default function DetailsPage({ params }) {
@@ -160,6 +161,13 @@ export default function DetailsPage({ params }) {
                         </h3>
                     </div>
 
+                    <ProductDetails
+                        frame={data?.frame}
+                        medium={data?.medium}
+                        signature={data?.signature}
+                        dimensions={data?.dimensions}
+                        certificate={data?.certificate}
+                    />
                     <div className="mt-6">
                         <small className="text-gray-500">
                             {data.status === 'closed' ||
