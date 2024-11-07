@@ -16,6 +16,7 @@ import {
 import Alert from '../../../components/atoms/alert'
 import TextArea from '../../../components/atoms/text-area/text-area'
 import TextInput from '../../../components/atoms/text-input'
+import CheckBox from '../../../components/atoms/checkbox/checkbox'
 import { format } from 'date-fns'
 import { app } from '../../../config/index'
 import { Button } from '../../../components/ui/button'
@@ -121,16 +122,26 @@ const CreateAuctionPage = () => {
                     return endDateTime.isAfter(startDateTime)
                 }
             ),
+        frame: Yup.boolean(),
+        medium: Yup.string().required('Medium is required'),
+        dimensions: Yup.string().required('Dimensions are required'),
+        signature: Yup.boolean(),
+        certificate: Yup.boolean(),
     })
 
     const initialValues = {
         title: '',
         image: null,
+        frame: '',
+        medium: '',
         endDate: '',
         endTime: '',
         subTitle: '',
+        signature: '',
         startTime: '',
         startDate: '',
+        dimensions: '',
+        certificate: '',
         description: '',
         startingPrice: 0,
     }
@@ -161,13 +172,18 @@ const CreateAuctionPage = () => {
                 body: JSON.stringify({
                     title: values.title,
                     image: imageUrl,
+                    frame: values.frame,
                     userId: user.userId,
+                    medium: values.medium,
                     endTime: values.endTime,
                     endDate: endDate.toISOString(),
                     subTitle: values.subTitle,
                     startTime: values.startTime,
+                    signature: values.signature,
                     startDate: startDate.toISOString(),
                     startPrice: values.startingPrice,
+                    dimensions: values.dimensions,
+                    certificate: values.certificate,
                     description: values.description,
                 }),
                 headers: {
@@ -198,7 +214,7 @@ const CreateAuctionPage = () => {
                     validationSchema={validationSchema}
                     onSubmit={handleSubmit}
                 >
-                    {({ isSubmitting, setFieldValue }) => (
+                    {({ values, isSubmitting, setFieldValue }) => (
                         <Form>
                             <div className="my-2 flex flex-col">
                                 <label className="text_input_label">
@@ -237,7 +253,6 @@ const CreateAuctionPage = () => {
                                     className="text-red-400"
                                 />
                             </div>
-
                             <div className="my-2">
                                 <Field
                                     name="subTitle"
@@ -252,6 +267,97 @@ const CreateAuctionPage = () => {
                                     component="small"
                                     className="text-red-400"
                                 />
+                            </div>
+
+                            <div className="my-2">
+                                <Field
+                                    name="medium"
+                                    type="text"
+                                    as={TextInput}
+                                    label="Medium"
+                                    required={true}
+                                    disabled={isLoading || isSubmitting}
+                                />
+                                <ErrorMessage
+                                    name="medium"
+                                    component="small"
+                                    className="text-red-400"
+                                />
+                            </div>
+                            <div className="my-2">
+                                <Field
+                                    name="dimensions"
+                                    type="text"
+                                    as={TextInput}
+                                    label="Dimensions"
+                                    required={true}
+                                    disabled={isLoading || isSubmitting}
+                                />
+                                <ErrorMessage
+                                    name="dimensions"
+                                    component="small"
+                                    className="text-red-400"
+                                />
+                            </div>
+                            <div className="flex justify-between">
+                                <div className="my-2">
+                                    <Field
+                                        name="frame"
+                                        as={CheckBox}
+                                        label="Framed"
+                                        onChange={() =>
+                                            setFieldValue(
+                                                'frame',
+                                                !values.frame
+                                            )
+                                        }
+                                        disabled={isLoading || isSubmitting}
+                                    />
+                                    <ErrorMessage
+                                        name="frame"
+                                        component="small"
+                                        className="text-red-400"
+                                    />
+                                </div>
+                                <div className="my-2">
+                                    <Field
+                                        name="signature"
+                                        as={CheckBox}
+                                        label="Signed"
+                                        onChange={() =>
+                                            setFieldValue(
+                                                'signature',
+                                                !values.signature
+                                            )
+                                        }
+                                        disabled={isLoading || isSubmitting}
+                                    />
+                                    <ErrorMessage
+                                        name="signature"
+                                        component="small"
+                                        className="text-red-400"
+                                    />
+                                </div>
+
+                                <div className="my-2">
+                                    <Field
+                                        name="certificate"
+                                        as={CheckBox}
+                                        label="Certificate"
+                                        onChange={() =>
+                                            setFieldValue(
+                                                'certificate',
+                                                !values.certificate
+                                            )
+                                        }
+                                        disabled={isLoading || isSubmitting}
+                                    />
+                                    <ErrorMessage
+                                        name="certificate"
+                                        component="small"
+                                        className="text-red-400"
+                                    />
+                                </div>
                             </div>
 
                             <div className="my-2">
@@ -467,6 +573,7 @@ const CreateAuctionPage = () => {
                                 type="submit"
                                 className="mt-5 w-full bg-bidder-primary"
                                 disabled={isLoading || isSubmitting}
+                                isLoading={isLoading || isSubmitting}
                             >
                                 {isLoading || isSubmitting
                                     ? 'Creating...'
