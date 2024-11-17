@@ -205,10 +205,10 @@ const SignUpPage = () => {
                                         'Registration failed after verification. Please try again.'
                                     )
                                 }
+                            } else if (response.data.result === 'rejected') {
+                                setAuthError('Your verification was not successful. Please ensure your documents are valid and try again.')
                             } else {
-                                setAuthError(
-                                    'Identity verification failed. Please try again.'
-                                )
+                                setAuthError('Identity verification failed. Please try again.')
                             }
                         } catch (error) {
                             console.error('Identity check error:', error)
@@ -230,11 +230,6 @@ const SignUpPage = () => {
                     },
                 })
                 setComplycubeInstance(instance)
-            } catch (error) {
-                setAuthError(
-                    'An error occurred while verifying your identity, please try again later.'
-                )
-                return false
             }
         }
     }

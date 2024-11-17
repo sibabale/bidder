@@ -13,7 +13,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '../../../components/ui/popover'
-import Alert from '../../../components/atoms/alert'
+import Alert from '../../../components/molecules/alert'
 import TextArea from '../../../components/atoms/text-area/text-area'
 import TextInput from '../../../components/atoms/text-input'
 import { format } from 'date-fns'

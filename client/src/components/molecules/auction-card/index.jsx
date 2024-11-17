@@ -23,7 +23,7 @@ export default function AuctionCard({ product }) {
                         {product.title}
                     </h2>
                     <h3 className="text-sm text-bidder-secondary font-semibold mt-2">
-                        Lorem ipsum
+                        {product.subTitle}
                     </h3>
                 </div>
                 <div className="mt-[10px]">
