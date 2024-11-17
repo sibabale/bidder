@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@complycube/api": "^1.1.11",
     "ably": "^2.4.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

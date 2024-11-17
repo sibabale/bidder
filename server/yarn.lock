@@ -9,6 +9,13 @@
   dependencies:
     bops "^1.0.1"
 
+"@complycube/api@^1.1.11":
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/@complycube/api/-/api-1.1.11.tgz#0c3c0cd8821820dbbf236cb0412ba5317075a3c3"
+  integrity sha512-JOXgnWj99XgxfcWM+yB4lSRlH1csoTEhdrySNjLrqDQDfkD6o83RbWZbR3aXxPc1QEyBu0E5uEQ5pfVSOEDskg==
+  dependencies:
+    axios "^0.21.1"
+
 "@fastify/busboy@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-3.0.0.tgz#328a4639cdd9282c1d1f56aa84943f153df8839d"
@@ -799,6 +806,13 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
+axios@^0.21.1:
+  version "0.21.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
+  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
+  dependencies:
+    follow-redirects "^1.14.0"
+
 balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
@@ -1292,6 +1306,11 @@ firebase@^10.14.1:
     "@firebase/storage-compat" "0.3.12"
     "@firebase/util" "1.10.0"
     "@firebase/vertexai-preview" "0.0.4"
+
+follow-redirects@^1.14.0:
+  version "1.15.9"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.9.tgz#a604fa10e443bf98ca94228d9eebcc2e8a2c8ee1"
+  integrity sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==
 
 form-data@^2.5.0:
   version "2.5.2"

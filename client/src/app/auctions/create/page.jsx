@@ -13,7 +13,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '../../../components/ui/popover'
-import Alert from '../../../components/atoms/alert'
+import Alert from '../../../components/molecules/alert'
 import TextArea from '../../../components/atoms/text-area/text-area'
 import TextInput from '../../../components/atoms/text-input'
 import CheckBox from '../../../components/atoms/checkbox/checkbox'
@@ -163,7 +163,7 @@ const CreateAuctionPage = () => {
                 throw new Error('Image is required')
             }
             const token = localStorage.getItem('biddar')
-            const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
+            const baseURL = process.env.NEXT_PUBLIC_API_URL
 
             const imageUrl = await handleUploadImage(values.image)
 

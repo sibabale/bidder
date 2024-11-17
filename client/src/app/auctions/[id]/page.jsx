@@ -24,7 +24,7 @@ export default function DetailsPage({ params }) {
     const { id } = params
 
     const token = localStorage.getItem('biddar')
-    const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
+    const baseURL = process.env.NEXT_PUBLIC_API_URL
 
     async function fetchProductDetails(id) {
         const response = await fetch(`${baseURL}/products/${id}`, {

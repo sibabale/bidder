@@ -10,7 +10,7 @@ export default function AuctionsPage() {
 
     useEffect(() => {
         const token = localStorage.getItem('biddar')
-        const basURL = process.env.NEXT_PUBLIC_BEARER_API_URL
+        const basURL = process.env.NEXT_PUBLIC_API_URL
 
         const fetchAuctions = async () => {
             try {
@@ -43,12 +43,12 @@ export default function AuctionsPage() {
             <h1 className="text-3xl font-bold mb-6">Auctions</h1>
             <div
                 className="
-          grid gap-6 
-          grid-cols-1 
-          sm:grid-cols-2 
-          lg:grid-cols-4 
-          xl:grid-cols-5
-        "
+                grid gap-6 
+                grid-cols-1 
+                sm:grid-cols-2 
+                lg:grid-cols-4 
+                xl:grid-cols-5
+             "
             >
                 {auctions.map((auction) => (
                     <AuctionCard key={auction.id} product={auction} />
