@@ -1,10 +1,18 @@
 import axios from 'axios'
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { jwtDecode } from 'jwt-decode'
 
 const useTokenChecker = () => {
     const router = useRouter()
+    const pathname = usePathname()
+
+    const publicAuthRoutes = [
+        '/',
+        '/auth/login',
+        '/auth/register',
+        '/auth/reset-password',
+    ]
 
     const isTokenExpired = (token) => {
         if (!token) return true
@@ -15,7 +23,7 @@ const useTokenChecker = () => {
     }
 
     const logout = async () => {
-        const baseURL = process.env.NEXT_PUBLIC_BEARER_API_URL
+        const baseURL = process.env.NEXT_PUBLIC_API_URL
         try {
             const token = await localStorage.getItem('biddar')
             await axios.post(
@@ -35,6 +43,9 @@ const useTokenChecker = () => {
     }
 
     useEffect(() => {
+        if (publicAuthRoutes.includes(pathname)) {
+            return
+        }
         const interval = setInterval(() => {
             const token = localStorage.getItem('biddar')
             if (isTokenExpired(token)) {
@@ -43,7 +54,7 @@ const useTokenChecker = () => {
         }, 60000)
 
         return () => clearInterval(interval)
-    }, [router])
+    }, [router, pathname])
 }
 
 export default useTokenChecker

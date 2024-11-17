@@ -23,7 +23,6 @@ router.get('/', async (req, res) => {
         }
 
         const user = userDoc.data();
-        console.log("user", user);
         res.status(200).json({ message: 'User is authenticated.', token: user.jwtToken });
     } catch (error) {
         console.error('Error fetching token:', error);
