@@ -39,12 +39,12 @@ router.get('/', verifyToken, async (req, res) => {
         case 'check.completed': {
           const checkId = event.payload.id;
           const checkOutCome = event.payload.outcome;
-          console.log(`Check ${checkId} completed with outcome ${checkOutCome}`);
+          // console.log(`Check ${checkId} completed with outcome ${checkOutCome}`);
           break;
         }
         case 'check.pending': {
           const checkId = event.payload.id;
-          console.log(`Check ${checkId} is pending`);
+          // console.log(`Check ${checkId} is pending`);
           break;
         }
         // ... handle other event types

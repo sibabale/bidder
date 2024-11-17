@@ -183,8 +183,6 @@ const SignUpPage = () => {
                                 }
                             )
 
-                            console.log(response.data)
-
                             if (response.data.result === 'clear') {
                                 try {
                                     await mutateRegistration(userData)
