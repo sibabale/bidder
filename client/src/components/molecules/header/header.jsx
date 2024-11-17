@@ -20,7 +20,7 @@ export default function Header() {
     const token = localStorage.getItem('biddar')
     const { error, mutateAsync, isPending } = useMutation({
         mutationFn: async () => {
-            const BASE_URL = process.env.NEXT_PUBLIC_BEARER_API_URL
+            const BASE_URL = process.env.NEXT_PUBLIC_API_URL
             await axios.post(
                 `${BASE_URL}/logout`,
                 {},
@@ -41,7 +41,7 @@ export default function Header() {
     const toggleMenu = () => setMenuOpen(!menuOpen)
 
     return (
-        <header className="bg-white shadow-md sticky top-0 z-50">
+        <header className="bg-white shadow-md sticky top-0 z-2">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="text-2xl font-bold">
