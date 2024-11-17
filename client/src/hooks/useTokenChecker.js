@@ -23,9 +23,11 @@ const useTokenChecker = () => {
     }
 
     const logout = async () => {
+        const token = await localStorage.getItem('biddar')
+        if (!token) return
+
         const baseURL = process.env.NEXT_PUBLIC_API_URL
         try {
-            const token = await localStorage.getItem('biddar')
             await axios.post(
                 `${baseURL}/logout`,
                 {},
