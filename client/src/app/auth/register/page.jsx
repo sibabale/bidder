@@ -204,9 +204,13 @@ const SignUpPage = () => {
                                     )
                                 }
                             } else if (response.data.result === 'rejected') {
-                                setAuthError('Your verification was not successful. Please ensure your documents are valid and try again.')
+                                setAuthError(
+                                    'Your verification was not successful. Please ensure your documents are valid and try again.'
+                                )
                             } else {
-                                setAuthError('Identity verification failed. Please try again.')
+                                setAuthError(
+                                    'Identity verification failed. Please try again.'
+                                )
                             }
                         } catch (error) {
                             console.error('Identity check error:', error)
@@ -228,6 +232,11 @@ const SignUpPage = () => {
                     },
                 })
                 setComplycubeInstance(instance)
+            } catch (error) {
+                console.error('ComplyCube initialization error:', error)
+                setAuthError(
+                    'An unknown error occurred. Please try again later.'
+                )
             }
         }
     }
