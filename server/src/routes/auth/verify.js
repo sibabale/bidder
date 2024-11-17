@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const rateLimit = require('express-rate-limit');
+const { rateLimit } = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const { collection, query, where, getDocs } = require('firebase/firestore');
 const db = require('../../../firebase-config');

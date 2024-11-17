@@ -1,6 +1,6 @@
 const express = require('express');
 const { ComplyCube } = require("@complycube/api");
-
+const { rateLimit } = require('express-rate-limit');
 
 const router = express.Router();
 

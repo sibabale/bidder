@@ -1,7 +1,7 @@
 const express = require('express');
 const validator = require('validator');
 const { collection, doc, getDoc, arrayUnion, runTransaction } = require('firebase/firestore');
-const rateLimit = require('express-rate-limit');
+const { rateLimit } = require('express-rate-limit');
 const Ably = require('ably');
 
 const db = require('../../../firebase-config'); 

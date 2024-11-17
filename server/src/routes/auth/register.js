@@ -1,7 +1,7 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const express = require('express');
-const rateLimit = require('express-rate-limit');
+const { rateLimit } = require('express-rate-limit');
 const { doc, setDoc } = require('firebase/firestore');
 const { body, validationResult } = require('express-validator');
 const { getAuth, createUserWithEmailAndPassword } = require('firebase/auth');
