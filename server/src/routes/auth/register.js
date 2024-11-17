@@ -47,8 +47,6 @@ router.post('/', registerLimiter, [
         if (!user.uid) {
             throw new Error('User ID is not available');
         }
-        
-
 
         const jwtToken = jwt.sign(
             { uid: user.uid, email: user.email },
@@ -72,10 +70,17 @@ router.post('/', registerLimiter, [
             jwtToken
         });
 
-        res.status(201).json({ message: 'User registered successfully', userId: uid, jwtToken });
+        res.status(201).json({ 
+            message: 'User registered successfully', 
+            userId: uid, 
+            jwtToken 
+        });
     } catch (error) {
         console.error('Error registering user:', error);
-        res.status(500).json({ message: 'Failed to register user', error: error.message });
+        res.status(500).json({ 
+            message: 'Failed to register user', 
+            error: error.message 
+        });
     }
 });
 
