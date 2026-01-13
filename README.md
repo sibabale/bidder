@@ -2,7 +2,7 @@
 
 Real-time Bidding Platform
 
-![Bidder Logo](./client/public/images/Logo.png)
+![Bidder Logo](assets/images/Logo.png)
 
 Bidder is a modern, full-stack bidding application designed for real-time auctions. It leverages a powerful combination of Next.js for a smooth user experience and Express.js for a robust backend, with Ably ensuring that every bid is synchronized instantly across all clients.
 
