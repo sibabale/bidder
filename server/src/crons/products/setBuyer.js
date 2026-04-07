@@ -1,29 +1,30 @@
+const admin = require('../../config/firebase-admin');
 
-const { collection, getDocs ,getDoc,  query, where, doc, updateDoc } = require('firebase/firestore');
-const db = require('../../../firebase-config');
+const db = admin.firestore();
 
-// Function to find the highest bidder and update the product with buyer details
-const setBuyer = async (productId) => {
+async function setBuyer(productId) {
   try {
-
-    const productDoc = await getDoc(doc(db, 'products', productId));
+    const productDoc = await db.collection('products').doc(productId).get();
     const productData = productDoc.data();
+
+    if (!productData) {
+      return;
+    }
 
     if (productData.buyer) {
       console.log(`Buyer already set for product ${productId}, skipping...`);
-      return; 
+      return;
     }
-    
-    const bidsQuery = query(collection(db, 'bids'), where('productId', '==', productId));
-    const bidsSnapshot = await getDocs(bidsQuery);
 
-    if (bidsSnapshot.empty) {
+    const bidsSnap = await db.collection('bids').where('productId', '==', productId).get();
+
+    if (bidsSnap.empty) {
       console.log(`No bids found for product ${productId}`);
       return;
     }
 
     let highestBid = null;
-    bidsSnapshot.forEach((bidDoc) => {
+    bidsSnap.forEach((bidDoc) => {
       const bidData = bidDoc.data();
       if (!highestBid || bidData.amount > highestBid.amount) {
         highestBid = { ...bidData, id: bidDoc.id };
@@ -33,10 +34,9 @@ const setBuyer = async (productId) => {
     if (highestBid) {
       const { userId, amount, timestamp } = highestBid;
 
-      const userDocRef = doc(db, 'users', userId); 
-      const userDoc = await getDoc(userDocRef);
+      const userDoc = await db.collection('users').doc(userId).get();
 
-      if (!userDoc.exists()) {
+      if (!userDoc.exists) {
         console.error(`User with ID ${userId} does not exist.`);
         return;
       }
@@ -48,13 +48,13 @@ const setBuyer = async (productId) => {
         bid: { amount, timestamp },
       };
 
-      await updateDoc(doc(db, 'products', productId), { buyer });
+      await db.collection('products').doc(productId).update({ buyer });
 
       console.log(`Set buyer for product ${productId}:`, buyer);
     }
   } catch (error) {
     console.error('Error setting buyer:', error);
   }
-};
+}
 
 module.exports = setBuyer;

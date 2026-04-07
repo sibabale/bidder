@@ -1,4 +1,10 @@
 {
-    "version": 2,
-    "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "version": 2,
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+  "crons": [
+    {
+      "path": "/api/internal/cron/update-product-statuses",
+      "schedule": "* * * * *"
+    }
+  ]
 }

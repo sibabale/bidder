@@ -1,25 +1,17 @@
-const { 
-  doc, 
-  where,
-  query,
-  getDoc,
-  addDoc, 
-  getDocs, 
-  collection,
-} = require('firebase/firestore');
 const moment = require('moment-timezone');
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const admin = require('../../config/firebase-admin');
 
-const db = require('../../../firebase-config');
+const db = admin.firestore();
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
 
 const booleanOrEmpty = (value) => {
-    if (value === '' || typeof value === 'boolean') {
-        return true;
-    }
-    throw new Error('Must be a boolean');
+  if (value === '' || typeof value === 'boolean') {
+    return true;
+  }
+  throw new Error('Must be a boolean');
 };
 
 router.post(
@@ -31,20 +23,20 @@ router.post(
     body('frame').optional().isBoolean().withMessage('Frame must be a boolean'),
     body('medium').notEmpty().withMessage('Medium is required'),
     body('userId').isLength({ min: 28, max: 28 }).withMessage('Invalid user ID format'),
-    body('endDate').isISO8601().withMessage('Invalid end date'), // ISO8601 validation
+    body('endDate').isISO8601().withMessage('Invalid end date'),
     body('subTitle').notEmpty().withMessage('Subtitle is required'),
     body('signature').optional().custom(booleanOrEmpty),
-    body('startDate').isISO8601().withMessage('Invalid start date'), // ISO8601 validation
+    body('startDate').isISO8601().withMessage('Invalid start date'),
     body('startPrice').isFloat({ gt: 0 }).withMessage('Start price must be a positive number'),
     body('certificate').optional().custom(booleanOrEmpty),
     body('description').notEmpty().withMessage('Description is required'),
-    body('endTime').custom((value, { req }) => {
+    body('endTime').custom((value) => {
       if (!value || typeof value.hour !== 'number' || typeof value.minute !== 'number') {
         throw new Error('Invalid end time format');
       }
       return true;
     }),
-    body('startTime').custom((value, { req }) => {
+    body('startTime').custom((value) => {
       if (!value || typeof value.hour !== 'number' || typeof value.minute !== 'number') {
         throw new Error('Invalid start time format');
       }
@@ -57,26 +49,29 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { 
-      image, 
-      title, 
-      frame, 
-      medium, 
-      userId, 
+    const {
+      image,
+      title,
+      frame,
+      medium,
+      userId,
       endDate,
       endTime,
-      subTitle, 
+      subTitle,
       startDate,
       startTime,
       signature,
-      dimensions, 
-      startPrice, 
-      certificate, 
+      dimensions,
+      startPrice,
+      certificate,
       description,
     } = req.body;
 
+    if (userId !== req.auth.uid) {
+      return res.status(403).json({ message: 'User ID does not match authenticated user' });
+    }
+
     try {
-      // Convert endTime and startTime to Date objects
       const startDateTime = moment.tz(`${startDate}`, 'Africa/Johannesburg').set({
         hour: startTime.hour,
         minute: startTime.minute,
@@ -91,70 +86,61 @@ router.post(
         millisecond: endTime.millisecond,
       });
 
+      if (endDateTime.isBefore(startDateTime)) {
+        return res.status(400).json({ message: 'End time must be after start time' });
+      }
 
-    // Validate that endTime is after startTime
-    if (endDateTime.isBefore(startDateTime)) {
-      return res.status(400).json({ message: 'End time must be after start time' });
-    }
+      const userDoc = await db.collection('users').doc(userId).get();
 
-
-      // Check if the user exists by querying the document by ID
-      const userDocRef = doc(collection(db, 'users'), userId);
-      const userDoc = await getDoc(userDocRef);
-  
-      
-      if (!userDoc.exists()) {
+      if (!userDoc.exists) {
         return res.status(404).json({ message: 'User does not exist' });
       }
 
-      // Check if the user already has a product with the same title
-      const productsQuery = query(
-        collection(db, 'products'),
-        where('title', '==', title),
-        where('userId', '==', userId)
-      );
-      const querySnapshot = await getDocs(productsQuery);
+      const duplicateSnap = await db
+        .collection('products')
+        .where('title', '==', title)
+        .where('userId', '==', userId)
+        .limit(1)
+        .get();
 
-      if (!querySnapshot.empty) {
+      if (!duplicateSnap.empty) {
         return res.status(400).json({ message: 'You already have a product with this title' });
       }
 
-      // Determine product status based on the current time
       const now = new Date();
       let status;
-      if (now < startDateTime) {
+      if (now < startDateTime.toDate()) {
         status = 'coming_soon';
-      } else if (now >= startDateTime && now <= endDateTime) {
+      } else if (now >= startDateTime.toDate() && now <= endDateTime.toDate()) {
         status = 'live';
       } else {
         status = 'closed';
       }
 
-      // Save product to Firestore
       const newProduct = {
         title,
         image,
         userId,
         status,
-        frame, 
-        medium, 
+        frame,
+        medium,
         endTime: endDateTime.toISOString(),
         subTitle,
         startTime: startDateTime.toISOString(),
         timestamp: new Date(),
         signature,
-        dimensions, 
+        dimensions,
         startPrice: parseFloat(startPrice),
         highestBid: parseFloat(startPrice),
         certificate,
         description,
       };
 
-      const productRef = await addDoc(collection(db, 'products'), newProduct);
+      const productRef = await db.collection('products').add(newProduct);
 
-      res.status(201).json({ 
-        message: 'Product uploaded successfully', 
-        productId: productRef.id 
+      res.status(201).json({
+        message: 'Product uploaded successfully',
+        productId: productRef.id,
       });
     } catch (error) {
       console.error('Error uploading product:', error);
@@ -162,6 +148,5 @@ router.post(
     }
   }
 );
-
 
 module.exports = router;

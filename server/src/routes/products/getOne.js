@@ -1,7 +1,7 @@
 const express = require('express');
-const { doc, getDoc } = require('firebase/firestore');
+const admin = require('../../config/firebase-admin');
 
-const db = require('../../../firebase-config');
+const db = admin.firestore();
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
 
@@ -9,15 +9,12 @@ router.get('/:productId', verifyToken, async (req, res) => {
   const { productId } = req.params;
 
   try {
-    // Fetch product from Firestore using the product ID
-    const productRef = doc(db, 'products', productId);
-    const productSnap = await getDoc(productRef);
+    const productSnap = await db.collection('products').doc(productId).get();
 
-    if (!productSnap.exists()) {
+    if (!productSnap.exists) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Return product data
     res.status(200).json(productSnap.data());
   } catch (error) {
     console.error('Error fetching product:', error);

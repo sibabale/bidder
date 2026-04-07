@@ -1,11 +1,12 @@
 require('dotenv').config();
+
+require('./src/config/firebase-admin');
 require('./src/crons/products/updateStatus');
 
 const express = require('express');
 const http = require('http');
 const Ably = require('ably');
 
-// Initialize Ably client
 const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
 
 const morgan = require('./src/middleware/morgan');
@@ -23,28 +24,25 @@ const identityCheck = require('./src/routes/kyc/identityCheck');
 const getOneProduct = require('./src/routes/products/getOne');
 const getAllProducts = require('./src/routes/products/getAll');
 const generateKYCToken = require('./src/routes/kyc/generateToken');
-
+const cronProductStatus = require('./src/routes/internal/cronProductStatus');
 
 const app = express();
 const server = http.createServer(app);
 
 app.use(express.json());
-app.use(morgan); 
-app.use(corsMiddleware); 
-app.use(helmetMiddleware); 
+app.use(morgan);
+app.use(corsMiddleware);
+app.use(helmetMiddleware);
 
-// Attach Ably to the request object
 app.use((req, res, next) => {
-    req.ably = ably;
-    next();
+  req.ably = ably;
+  next();
 });
 
-// Default route
 app.get('/', (req, res) => {
-    res.send('Welcome to the API!');
+  res.send('Welcome to the API!');
 });
 
-// Use routers
 app.use('/api/bids', createBid);
 app.use('/api/products', createProduct);
 app.use('/api/products', getOneProduct);
@@ -59,21 +57,37 @@ app.use('/api/get-token', getToken);
 app.use('/api/identity-check', identityCheck);
 app.use('/api/generate-kyc-token', generateKYCToken);
 
-// Real-time communication using Ably
+app.use('/api/internal/cron', cronProductStatus);
+
 ably.connection.on('connected', () => {
-    console.log('Ably connected successfully');
+  console.log('Ably connected successfully');
 });
 
 const bidChannel = ably.channels.get('biddar');
 
 bidChannel.subscribe('new-bid', (message) => {
-    console.log('New bid received:', message.data);
+  console.log('New bid received:', message.data);
 });
 
-// Start the server
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+  res.status(500).json({ message: 'Internal server error' });
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+});
+
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
 
-exports.default = app;
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

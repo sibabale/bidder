@@ -1,20 +1,18 @@
 const express = require('express');
-const { collection, getDocs } = require('firebase/firestore');
+const admin = require('../../config/firebase-admin');
 
-const db = require('../../../firebase-config'); 
+const db = admin.firestore();
 const verifyToken = require('../../middleware/auth/verifyToken');
 
 const router = express.Router();
 
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const productsCollection = collection(db, 'products');
-    const productsSnapshot = await getDocs(productsCollection); 
+    const productsSnapshot = await db.collection('products').get();
 
-    // Map the fetched data into an array of product objects
-    const products = productsSnapshot.docs.map((doc) => ({
-      id: doc.id, // Firestore document ID
-      ...doc.data(), // All other product fields
+    const products = productsSnapshot.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
     }));
 
     res.status(200).json(products);

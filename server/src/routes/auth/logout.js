@@ -16,14 +16,13 @@ router.post('/', async (req, res) => {
           const ttl = 500;
   
   
-          // Set the token in Redis with a TTL
-          await redisClient.setex(token, ttl, 'blacklisted').catch((err) => {
-              console.error('Error blacklisting token in Redis:', err);
-              return res
-                  .status(HttpStatusCode.INTERNAL_SERVER)
-                  .json({ error: 'Could not blacklist token' });
-          });
-  
+          try {
+            await redisClient.setex(token, ttl, 'blacklisted');
+          } catch (err) {
+            console.error('Error blacklisting token in Redis:', err);
+            return res.status(500).json({ error: 'Could not blacklist token' });
+          }
+
           res.status(200).json({ message: 'Logout successful' });
     } catch (error) {
         console.error('Error signing out user:', error);
