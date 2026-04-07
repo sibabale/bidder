@@ -2,15 +2,11 @@ const express = require('express');
 const validator = require('validator');
 const { collection, doc, getDoc, arrayUnion, runTransaction } = require('firebase/firestore');
 const { rateLimit } = require('express-rate-limit');
-const Ably = require('ably');
 
-const db = require('../../../firebase-config'); 
+const db = require('../../../firebase-config');
+const { bidChannel } = require('../../lib/ablyClient');
 const router = express.Router();
-const verifyToken = require('../../middleware/auth/verifyToken'); 
-
-// Initialize Ably client
-const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
-const bidChannel = ably.channels.get('biddar');
+const verifyToken = require('../../middleware/auth/verifyToken');
 
 const bidLimiter = rateLimit({
   windowMs: 60 * 1000, 

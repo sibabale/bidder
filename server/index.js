@@ -3,10 +3,7 @@ require('./src/crons/products/updateStatus');
 
 const express = require('express');
 const http = require('http');
-const Ably = require('ably');
-
-// Initialize Ably client
-const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
+const { ably, bidChannel } = require('./src/lib/ablyClient');
 
 const morgan = require('./src/middleware/morgan');
 const corsMiddleware = require('./src/middleware/cors');
@@ -63,8 +60,6 @@ app.use('/api/generate-kyc-token', generateKYCToken);
 ably.connection.on('connected', () => {
     console.log('Ably connected successfully');
 });
-
-const bidChannel = ably.channels.get('biddar');
 
 bidChannel.subscribe('new-bid', (message) => {
     console.log('New bid received:', message.data);
