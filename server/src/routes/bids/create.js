@@ -1,16 +1,13 @@
 const express = require('express');
 const validator = require('validator');
 const { rateLimit } = require('express-rate-limit');
-const Ably = require('ably');
 const admin = require('../../config/firebase-admin');
+const { publishBid } = require('../../lib/ably');
 
 const db = admin.firestore();
 const FieldValue = admin.firestore.FieldValue;
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
-
-const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
-const bidChannel = ably.channels.get('biddar');
 
 const bidLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -37,8 +34,8 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
     }
 
     const productRef = db.collection('products').doc(productId);
+    const bidRef = db.collection('bids').doc();
     const bidTimestamp = new Date();
-    const newBid = { productId, userId, amount, timestamp: bidTimestamp };
 
     await db.runTransaction(async (transaction) => {
       const productSnap = await transaction.get(productRef);
@@ -64,7 +61,13 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
         throw Object.assign(new Error('Bid must exceed the current highest bid.'), { code: 'BID_NOT_HIGHEST' });
       }
 
-      const bidRef = db.collection('bids').doc();
+      const newBid = {
+        bidId: bidRef.id,
+        productId,
+        userId,
+        amount,
+        timestamp: bidTimestamp,
+      };
 
       transaction.set(bidRef, newBid);
       transaction.update(productRef, {
@@ -73,15 +76,21 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
       });
     });
 
-    bidChannel.publish('new-bid', newBid, (err) => {
-      if (err) {
-        console.error('Failed to publish bid:', err);
-      } else {
-        console.log('Bid event published successfully:', newBid);
-      }
-    });
+    const newBid = {
+      bidId: bidRef.id,
+      productId,
+      userId,
+      amount,
+      timestamp: bidTimestamp,
+    };
 
-    res.status(201).json({ message: 'Bid placed successfully' });
+    try {
+      await publishBid(productId, newBid);
+    } catch (publishError) {
+      console.error('Failed to publish bid to Ably:', publishError);
+    }
+
+    res.status(201).json({ message: 'Bid placed successfully', bid: newBid });
   } catch (error) {
     console.error('Error placing bid:', error);
     if (error.code === 'NOT_FOUND') {

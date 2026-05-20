@@ -4,6 +4,7 @@ import Image from 'next/image'
 import numeral from 'numeral'
 import { useQuery } from '@tanstack/react-query'
 import { useSocket } from '../../../hooks/useSocket'
+import { BID_EVENT_NAME, getAuctionChannelName } from '../../../lib/ably'
 import { useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -46,7 +47,7 @@ export default function DetailsPage({ params }) {
         enabled: !!id,
     })
 
-    const channel = useSocket(`auction-${id}`)
+    const channel = useSocket(getAuctionChannelName(id))
 
     useEffect(() => {
         if (data?.highestBid) {
@@ -59,7 +60,7 @@ export default function DetailsPage({ params }) {
         if (!channel) return
 
         // Listen for new bids
-        channel.subscribe('new_bid', (message) => {
+        channel.subscribe(BID_EVENT_NAME, (message) => {
             const bid = message.data
             setBids((prevBids) => [...prevBids, bid])
             setCurrentBid(bid.amount)
@@ -93,9 +94,9 @@ export default function DetailsPage({ params }) {
                 body: JSON.stringify(bidData),
             })
 
-            // Emit a WebSocket event if the bid was successful
-            if (response.status === 201) {
-                channel.publish('new_bid', bidData) // Notify others
+            if (!response.ok) {
+                const body = await response.json().catch(() => ({}))
+                throw new Error(body.message || 'Failed to place bid')
             }
         } catch (error) {
             console.error('Error placing bid:', error)

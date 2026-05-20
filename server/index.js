@@ -63,12 +63,6 @@ ably.connection.on('connected', () => {
   console.log('Ably connected successfully');
 });
 
-const bidChannel = ably.channels.get('biddar');
-
-bidChannel.subscribe('new-bid', (message) => {
-  console.log('New bid received:', message.data);
-});
-
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   if (res.headersSent) {
