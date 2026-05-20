@@ -9,6 +9,9 @@ function getAuctionChannelName(productId) {
 let restClient;
 
 function getRestClient() {
+  if (!process.env.ABLY_API_KEY) {
+    throw new Error('ABLY_API_KEY is not configured');
+  }
   if (!restClient) {
     restClient = new Ably.Rest({ key: process.env.ABLY_API_KEY });
   }
@@ -23,5 +26,6 @@ async function publishBid(productId, payload) {
 module.exports = {
   BID_EVENT_NAME,
   getAuctionChannelName,
+  getRestClient,
   publishBid,
 };

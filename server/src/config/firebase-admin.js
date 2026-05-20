@@ -18,7 +18,19 @@ function parseServiceAccountJson(raw) {
 function loadCredential() {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
     const absolutePath = path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
-    const raw = fs.readFileSync(absolutePath, 'utf8');
+    let raw;
+    try {
+      raw = fs.readFileSync(absolutePath, 'utf8');
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new Error(
+          `Firebase service account file not found at ${absolutePath}. Check FIREBASE_SERVICE_ACCOUNT_PATH.`
+        );
+      }
+      throw new Error(
+        `Failed to read Firebase service account at ${absolutePath}: ${error.message}`
+      );
+    }
     return admin.credential.cert(parseServiceAccountJson(raw));
   }
 

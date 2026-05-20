@@ -2,6 +2,7 @@ const moment = require('moment-timezone');
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const admin = require('../../config/firebase-admin');
+const { PRODUCT_STATUS } = require('../../constants/productStatus');
 
 const db = admin.firestore();
 const router = express.Router();
@@ -110,11 +111,11 @@ router.post(
       const now = new Date();
       let status;
       if (now < startDateTime.toDate()) {
-        status = 'coming_soon';
+        status = PRODUCT_STATUS.COMING_SOON;
       } else if (now >= startDateTime.toDate() && now <= endDateTime.toDate()) {
-        status = 'live';
+        status = PRODUCT_STATUS.LIVE;
       } else {
-        status = 'closed';
+        status = PRODUCT_STATUS.CLOSED;
       }
 
       const newProduct = {

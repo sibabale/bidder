@@ -1,21 +1,31 @@
 const express = require('express');
-const { ComplyCube } = require("@complycube/api");
+const { ComplyCube } = require('@complycube/api');
 const { rateLimit } = require('express-rate-limit');
+const { getKycSession } = require('../../lib/kycSession');
 
 const router = express.Router();
 
-const registerLimiter = rateLimit({
-  windowMs: 20 * 60 * 1000, // 20 minutes
-  max: 3  , // Limit each IP to 3 identity checks per windowMs
+const identityCheckLimiter = rateLimit({
+  windowMs: 20 * 60 * 1000,
+  max: 3,
   message: 'Too many identity checks from this IP, please try again later.',
 });
 
-router.post('/', registerLimiter, async (req, res) => {
+router.post('/', identityCheckLimiter, async (req, res) => {
+  const { data, clientId } = req.body;
 
-  const {data, clientId} = req.body
-  
+  if (!clientId || !data?.documentCapture?.documentId || !data?.faceCapture?.liveVideoId) {
+    return res.status(400).json({ message: 'Invalid identity check payload' });
+  }
+
+  const session = await getKycSession(clientId);
+  if (!session) {
+    return res.status(403).json({
+      message: 'KYC session expired or invalid. Restart verification from registration.',
+    });
+  }
+
   try {
-
     const complycube = new ComplyCube({ apiKey: process.env.COMPLYCUBE_API_KEY });
 
     const check = await complycube.check.create(clientId, {
@@ -27,8 +37,7 @@ router.post('/', registerLimiter, async (req, res) => {
 
     const getCheck = await complycube.check.get(check.id);
 
-    res.status(200).json({ result: getCheck.result.outcome });
-    
+    res.status(200).json({ result: getCheck.result.outcome, clientId });
   } catch (error) {
     console.error('Error checking identity:', error);
     res.status(500).json({ message: 'Failed to check identity' });

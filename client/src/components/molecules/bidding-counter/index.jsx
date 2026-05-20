@@ -22,7 +22,7 @@ const calculateRemainingTime = (time) => {
 
 const CountdownTimer = ({ status, startTime, endTime }) => {
     const [timeLeft, setTimeLeft] = useState(
-        status === 'coming soon'
+        status === 'coming_soon' || status === 'coming soon'
             ? calculateRemainingTime(
                   new Date(startTime).toLocaleString('en-ZA', {
                       timeZone: 'Africa/Johannesburg',
@@ -37,7 +37,10 @@ const CountdownTimer = ({ status, startTime, endTime }) => {
 
     useEffect(() => {
         const timerId = setInterval(() => {
-            const timeToCount = status === 'coming soon' ? startTime : endTime
+            const timeToCount =
+                status === 'coming_soon' || status === 'coming soon'
+                    ? startTime
+                    : endTime
             setTimeLeft(
                 calculateRemainingTime(
                     new Date(timeToCount).toLocaleString('en-ZA', {

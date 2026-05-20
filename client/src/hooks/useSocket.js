@@ -6,15 +6,20 @@ export const useSocket = (channelName) => {
 
     useEffect(() => {
         const client = new Realtime({ authUrl: '/api/createTokenRequest' })
+        let channelInstance = null
 
-        client.connection.on('connected', () => {
-            console.log('Connected to Ably')
-            const channelInstance = client.channels.get(channelName)
+        const onConnected = () => {
+            channelInstance = client.channels.get(channelName)
             setChannel(channelInstance)
-        })
+        }
+
+        client.connection.on('connected', onConnected)
 
         return () => {
-            if (channel) channel.detach()
+            client.connection.off('connected', onConnected)
+            if (channelInstance) {
+                channelInstance.detach()
+            }
             client.close()
         }
     }, [channelName])

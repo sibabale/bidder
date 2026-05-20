@@ -69,7 +69,7 @@ router.post(
         emailVerified: userRecord.emailVerified || false,
         lastSignInTime,
         ...(complycubeClientId ? { complycubeClientId } : {}),
-        kycStatus: complycubeClientId ? 'pending' : 'unverified',
+        kycStatus: complycubeClientId ? 'verified' : 'unverified',
       });
 
       res.status(201).json({

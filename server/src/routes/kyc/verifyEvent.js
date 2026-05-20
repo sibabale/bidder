@@ -17,7 +17,11 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ message: 'Missing complycube-signature header' });
   }
 
-  const rawBody = req.rawBody ? req.rawBody.toString('utf8') : JSON.stringify(req.body);
+  if (!req.rawBody) {
+    return res.status(400).json({ message: 'Missing raw request body for signature verification' });
+  }
+
+  const rawBody = req.rawBody.toString('utf8');
 
   try {
     const eventVerifier = new EventVerifier(webhookSecret);
@@ -45,8 +49,9 @@ router.post('/', async (req, res) => {
             .get();
 
           if (!usersSnap.empty) {
+            const kycStatus = outcome === 'clear' ? 'verified' : 'rejected';
             await usersSnap.docs[0].ref.update({
-              kycStatus: outcome === 'clear' ? 'verified' : 'rejected',
+              kycStatus,
               kycUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
             });
           }
@@ -67,7 +72,8 @@ router.post('/', async (req, res) => {
         break;
       }
       default:
-        return res.status(400).json({ message: `Unhandled event type: ${event.type}` });
+        console.warn('Unhandled ComplyCube webhook event type:', event.type);
+        break;
     }
 
     return res.status(200).json({ received: true });

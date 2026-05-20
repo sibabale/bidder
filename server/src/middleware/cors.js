@@ -1,8 +1,8 @@
 const cors = require('cors');
-
+const { getCorsWhitelist } = require('../config/validateEnv');
 
 const corsOptions = {
-  origin: process.env.CORS_WHITELIST.split(','),
+  origin: getCorsWhitelist(),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import React, { useState } from 'react'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { publicEnv } from '../../../lib/env'
 
 import {
     Popover,
@@ -18,7 +18,6 @@ import TextArea from '../../../components/atoms/text-area/text-area'
 import TextInput from '../../../components/atoms/text-input'
 import CheckBox from '../../../components/atoms/checkbox/checkbox'
 import { format } from 'date-fns'
-import { app } from '../../../config/index'
 import { Button } from '../../../components/ui/button'
 import { Calendar } from '../../../components/ui/calendar'
 import CalenderIcon from '../../../components/atoms/icons/calender'
@@ -146,12 +145,25 @@ const CreateAuctionPage = () => {
         startingPrice: 0,
     }
 
-    const handleUploadImage = async (file) => {
-        const storage = getStorage(app)
-        const storageRef = ref(storage, `images/${file.name}`)
-        await uploadBytes(storageRef, file)
-        const downloadURL = await getDownloadURL(storageRef)
-        return downloadURL
+    const handleUploadImage = async (file, token) => {
+        const formData = new FormData()
+        formData.append('image', file)
+
+        const response = await fetch(`${publicEnv.apiUrl}/upload/image`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        })
+
+        if (!response.ok) {
+            const body = await response.json().catch(() => ({}))
+            throw new Error(body.message || 'Failed to upload image')
+        }
+
+        const { url } = await response.json()
+        return url
     }
 
     const handleSubmit = async (values) => {
@@ -163,11 +175,13 @@ const CreateAuctionPage = () => {
                 throw new Error('Image is required')
             }
             const token = localStorage.getItem('biddar')
-            const baseURL = process.env.NEXT_PUBLIC_API_URL
+            if (!token) {
+                throw new Error('You must be logged in to create an auction')
+            }
 
-            const imageUrl = await handleUploadImage(values.image)
+            const imageUrl = await handleUploadImage(values.image, token)
 
-            const repsonse = await fetch(`${baseURL}/products`, {
+            const repsonse = await fetch(`${publicEnv.apiUrl}/products`, {
                 method: 'POST',
                 body: JSON.stringify({
                     title: values.title,

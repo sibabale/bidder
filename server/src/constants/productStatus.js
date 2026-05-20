@@ -1,0 +1,17 @@
+const PRODUCT_STATUS = {
+  COMING_SOON: 'coming_soon',
+  LIVE: 'live',
+  CLOSED: 'closed',
+  CANCELLED: 'cancelled',
+};
+
+const BLOCKED_BID_STATUSES = [
+  PRODUCT_STATUS.CANCELLED,
+  PRODUCT_STATUS.CLOSED,
+  PRODUCT_STATUS.COMING_SOON,
+];
+
+module.exports = {
+  PRODUCT_STATUS,
+  BLOCKED_BID_STATUSES,
+};

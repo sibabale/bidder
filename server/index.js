@@ -5,9 +5,6 @@ require('./src/crons/products/updateStatus');
 
 const express = require('express');
 const http = require('http');
-const Ably = require('ably');
-
-const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
 
 const morgan = require('./src/middleware/morgan');
 const corsMiddleware = require('./src/middleware/cors');
@@ -27,6 +24,7 @@ const generateKYCToken = require('./src/routes/kyc/generateToken');
 const complycubeWebhook = require('./src/routes/kyc/verifyEvent');
 const cronProductStatus = require('./src/routes/internal/cronProductStatus');
 const health = require('./src/routes/health');
+const uploadImage = require('./src/routes/upload/image');
 
 const app = express();
 const server = http.createServer(app);
@@ -44,11 +42,6 @@ app.use(morgan);
 app.use(corsMiddleware);
 app.use(helmetMiddleware);
 
-app.use((req, res, next) => {
-  req.ably = ably;
-  next();
-});
-
 app.get('/', (req, res) => {
   res.send('Welcome to the API!');
 });
@@ -59,6 +52,7 @@ app.use('/api/bids', createBid);
 app.use('/api/products', createProduct);
 app.use('/api/products', getOneProduct);
 app.use('/api/products', getAllProducts);
+app.use('/api/upload', uploadImage);
 
 app.use('/api/login', login);
 app.use('/api/logout', logout);
@@ -71,10 +65,6 @@ app.use('/api/generate-kyc-token', generateKYCToken);
 app.use('/api/kyc/webhook', complycubeWebhook);
 
 app.use('/api/internal/cron', cronProductStatus);
-
-ably.connection.on('connected', () => {
-  console.log('Ably connected successfully');
-});
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);

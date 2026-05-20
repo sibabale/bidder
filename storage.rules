@@ -1,14 +1,11 @@
 rules_version = '2';
 
-// Images are uploaded from the client during auction creation.
-// TODO: move uploads behind Firebase Auth or a signed server URL.
+// Image uploads go through POST /api/upload (Firebase Admin SDK).
 service firebase.storage {
   match /b/{bucket}/o {
-    match /images/{fileName} {
+    match /images/{allPaths=**} {
       allow read: if true;
-      allow write: if request.resource != null
-        && request.resource.size < 10 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+      allow write: if false;
     }
 
     match /{allPaths=**} {

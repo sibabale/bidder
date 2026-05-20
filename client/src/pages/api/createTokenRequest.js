@@ -1,11 +1,18 @@
 import { Rest } from 'ably'
 
 export default async function handler(req, res) {
-    const client = new Rest({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY })
+    const apiKey = process.env.ABLY_API_KEY
+
+    if (!apiKey) {
+        res.status(500).json({ error: 'ABLY_API_KEY is not configured on the server' })
+        return
+    }
+
+    const client = new Rest({ key: apiKey })
 
     try {
         const tokenRequest = await client.auth.createTokenRequest({
-            clientId: 'biddar',
+            clientId: 'bidder-client',
         })
         res.status(200).json(tokenRequest)
     } catch (error) {

@@ -3,6 +3,8 @@ const validator = require('validator');
 const { rateLimit } = require('express-rate-limit');
 const admin = require('../../config/firebase-admin');
 const { publishBid } = require('../../lib/ably');
+const { parseBidAmount } = require('../../lib/parseBidAmount');
+const { BLOCKED_BID_STATUSES } = require('../../constants/productStatus');
 
 const db = admin.firestore();
 const FieldValue = admin.firestore.FieldValue;
@@ -14,13 +16,11 @@ const bidLimiter = rateLimit({
   max: 5,
 });
 
-const BLOCKED_STATUSES = ['cancelled', 'closed', 'coming soon', 'coming_soon'];
-
 router.post('/', bidLimiter, verifyToken, async (req, res) => {
   try {
-    const { userId, amount, productId } = req.body;
+    const { userId, amount: rawAmount, productId } = req.body;
 
-    if (!productId || !amount) {
+    if (!productId || rawAmount === undefined || rawAmount === null) {
       return res.status(400).json({ message: 'All fields are required' });
     }
     if (!validator.isLength(productId, { min: 1 }) || !validator.isLength(userId, { min: 1 })) {
@@ -29,7 +29,9 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
     if (userId !== req.auth.uid) {
       return res.status(403).json({ message: 'User ID does not match authenticated user' });
     }
-    if (typeof amount !== 'number' || amount <= 0) {
+
+    const amount = parseBidAmount(rawAmount);
+    if (amount === null) {
       return res.status(400).json({ message: 'Amount must be a positive number' });
     }
 
@@ -48,7 +50,7 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
       const startTime = new Date(productData.startTime);
       const endTime = new Date(productData.endTime);
 
-      if (BLOCKED_STATUSES.includes(productData.status) || now < startTime || now > endTime) {
+      if (BLOCKED_BID_STATUSES.includes(productData.status) || now < startTime || now > endTime) {
         throw Object.assign(new Error('Bidding is not allowed.'), { code: 'BID_CLOSED' });
       }
 
@@ -61,7 +63,7 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
         throw Object.assign(new Error('Bid must exceed the current highest bid.'), { code: 'BID_NOT_HIGHEST' });
       }
 
-      const newBid = {
+      const bidRecord = {
         bidId: bidRef.id,
         productId,
         userId,
@@ -69,7 +71,7 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
         timestamp: bidTimestamp,
       };
 
-      transaction.set(bidRef, newBid);
+      transaction.set(bidRef, bidRecord);
       transaction.update(productRef, {
         bids: FieldValue.arrayUnion(bidRef.id),
         highestBid: amount,
@@ -88,9 +90,18 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
       await publishBid(productId, newBid);
     } catch (publishError) {
       console.error('Failed to publish bid to Ably:', publishError);
+      return res.status(503).json({
+        message: 'Bid saved but live update failed. Refresh to see the latest state.',
+        bid: newBid,
+        broadcast: false,
+      });
     }
 
-    res.status(201).json({ message: 'Bid placed successfully', bid: newBid });
+    res.status(201).json({
+      message: 'Bid placed successfully',
+      bid: newBid,
+      broadcast: true,
+    });
   } catch (error) {
     console.error('Error placing bid:', error);
     if (error.code === 'NOT_FOUND') {

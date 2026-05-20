@@ -100,7 +100,7 @@ firebase deploy --only firestore:rules,storage --project bidding-app-f0697
 ```
 
 - **Firestore**: all client access denied; the API uses the Admin SDK.
-- **Storage**: public read on `images/`; writes limited to images under 10MB (migrate to authenticated uploads when ready).
+- **Storage**: public read on `images/`; client writes denied — uploads use `POST /api/upload/image` (Admin SDK).
 
 ## Security Considerations
 

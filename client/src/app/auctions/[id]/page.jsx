@@ -2,11 +2,12 @@
 
 import Image from 'next/image'
 import numeral from 'numeral'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSocket } from '../../../hooks/useSocket'
 import { BID_EVENT_NAME, getAuctionChannelName } from '../../../lib/ably'
+import { publicEnv } from '../../../lib/env'
 import { useSelector } from 'react-redux'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { Button } from '../../../components/ui/button'
@@ -19,27 +20,35 @@ export default function DetailsPage({ params }) {
     const [activeTab, setActiveTab] = useState('description')
     const [currentBid, setCurrentBid] = useState()
     const [biddingPrice, setBiddingPrice] = useState()
+    const [bidError, setBidError] = useState(null)
 
     const user = useSelector(loggedInUser)
+    const queryClient = useQueryClient()
 
     const { id } = params
 
-    const token = localStorage.getItem('biddar')
-    const baseURL = process.env.NEXT_PUBLIC_API_URL
+    const getAuthToken = useCallback(() => {
+        if (typeof window === 'undefined') return null
+        return localStorage.getItem('biddar')
+    }, [])
 
-    async function fetchProductDetails(id) {
-        const response = await fetch(`${baseURL}/products/${id}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        })
+    const fetchProductDetails = useCallback(
+        async (productId) => {
+            const token = getAuthToken()
+            const response = await fetch(`${publicEnv.apiUrl}/products/${productId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            })
 
-        if (!response.ok) throw new Error('Failed to fetch product')
+            if (!response.ok) throw new Error('Failed to fetch product')
 
-        return response.json()
-    }
+            return response.json()
+        },
+        [getAuthToken]
+    )
 
     const { data, error, isError, isPending } = useQuery({
         queryKey: ['product', id],
@@ -59,33 +68,38 @@ export default function DetailsPage({ params }) {
     useEffect(() => {
         if (!channel) return
 
-        // Listen for new bids
-        channel.subscribe(BID_EVENT_NAME, (message) => {
+        const onNewBid = (message) => {
             const bid = message.data
             setBids((prevBids) => [...prevBids, bid])
             setCurrentBid(bid.amount)
             setBiddingPrice(bid.amount)
-        })
+        }
 
-        // Cleanup when component unmounts
+        channel.subscribe(BID_EVENT_NAME, onNewBid)
+
         return () => {
-            channel.unsubscribe()
+            channel.unsubscribe(BID_EVENT_NAME, onNewBid)
         }
     }, [channel])
 
     const handleBidSubmit = async (e) => {
         e.preventDefault()
+        setBidError(null)
 
-        // Construct the bid object
+        const token = getAuthToken()
+        if (!token) {
+            setBidError('You must be logged in to place a bid.')
+            return
+        }
+
         const bidData = {
-            userId: user.userId, // Get this from your auth context or state
+            userId: user.userId,
             amount: Number(biddingPrice),
             productId: id,
         }
 
         try {
-            // Make an HTTP POST request to your REST API
-            const response = await fetch(`${baseURL}/bids`, {
+            const response = await fetch(`${publicEnv.apiUrl}/bids`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,12 +108,29 @@ export default function DetailsPage({ params }) {
                 body: JSON.stringify(bidData),
             })
 
+            const body = await response.json().catch(() => ({}))
+
+            if (response.status === 503 && body.bid) {
+                setCurrentBid(body.bid.amount)
+                setBiddingPrice(body.bid.amount)
+                await queryClient.invalidateQueries({ queryKey: ['product', id] })
+                setBidError(
+                    body.message ||
+                        'Bid saved but live update failed. Refresh if amounts look stale.'
+                )
+                return
+            }
+
             if (!response.ok) {
-                const body = await response.json().catch(() => ({}))
                 throw new Error(body.message || 'Failed to place bid')
             }
+
+            if (body.bid) {
+                setCurrentBid(body.bid.amount)
+                setBiddingPrice(body.bid.amount)
+            }
         } catch (error) {
-            console.error('Error placing bid:', error)
+            setBidError(error.message || 'Failed to place bid')
         }
     }
 
@@ -213,6 +244,12 @@ export default function DetailsPage({ params }) {
                         />
                     )}
 
+                    {bidError && (
+                        <p className="mt-4 text-sm text-red-600" role="alert">
+                            {bidError}
+                        </p>
+                    )}
+
                     {data.status === 'live' && (
                         <Button
                             onClick={handleBidSubmit}
@@ -275,21 +312,6 @@ export default function DetailsPage({ params }) {
                     </div>
                 </div>
             </div>
-
-            {/* Bids History */}
-            {/* <div className="mt-6">
-                <h2 className="text-lg font-semibold">Bids History</h2>
-                <ul className="mt-4 space-y-2">
-                    {bids.map((bid, index) => (
-                        <li key={index} className="flex justify-between">
-                            <span>{bid.userId}</span>
-                            <span>
-                                R{numeral(bid.amount).format('R0,0.00')}
-                            </span>
-                        </li>
-                    ))}
-                </ul>
-            </div> */}
         </div>
     )
 }
