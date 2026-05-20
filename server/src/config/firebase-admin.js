@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const admin = require('firebase-admin');
 
 function normalizePrivateKey(key) {
@@ -14,6 +16,12 @@ function parseServiceAccountJson(raw) {
 }
 
 function loadCredential() {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+    const absolutePath = path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT_PATH);
+    const raw = fs.readFileSync(absolutePath, 'utf8');
+    return admin.credential.cert(parseServiceAccountJson(raw));
+  }
+
   if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
     return admin.credential.cert(parseServiceAccountJson(process.env.FIREBASE_SERVICE_ACCOUNT_JSON));
   }
@@ -49,7 +57,7 @@ function loadCredential() {
   }
 
   throw new Error(
-    'Firebase Admin: set FIREBASE_SERVICE_ACCOUNT_JSON (full service account JSON) or legacy FIREBASE_SERVICE_ACCOUNT_* env vars.'
+    'Firebase Admin: set FIREBASE_SERVICE_ACCOUNT_PATH (local JSON file), FIREBASE_SERVICE_ACCOUNT_JSON, or legacy FIREBASE_SERVICE_ACCOUNT_* env vars.'
   );
 }
 
