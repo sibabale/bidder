@@ -185,7 +185,10 @@ const SignUpPage = () => {
 
                             if (response.data.result === 'clear') {
                                 try {
-                                    await mutateRegistration(userData)
+                                    await mutateRegistration({
+                                        ...userData,
+                                        complycubeClientId: clientId,
+                                    })
                                     if (instance) {
                                         instance.unmount()
                                         setComplycubeInstance(null)

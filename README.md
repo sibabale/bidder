@@ -75,7 +75,7 @@ The project is organized into two main micro-services:
    ```bash
    cd ../client
    npm install
-   # Create a .env.local file with your Firebase and API configuration
+   # Copy client/.env.example to .env.local and fill in values
    npm run dev
    ```
 
@@ -90,6 +90,17 @@ The project is organized into two main micro-services:
 ### Server
 - `npm run dev`: Starts the server with `nodemon` for automatic restarts.
 - `npm run start`: Starts the server using `node`.
+
+## Firebase rules
+
+Deploy Firestore and Storage rules from the repo root (requires [Firebase CLI](https://firebase.google.com/docs/cli)):
+
+```bash
+firebase deploy --only firestore:rules,storage --project bidding-app-f0697
+```
+
+- **Firestore**: all client access denied; the API uses the Admin SDK.
+- **Storage**: public read on `images/`; writes limited to images under 10MB (migrate to authenticated uploads when ready).
 
 ## Security Considerations
 

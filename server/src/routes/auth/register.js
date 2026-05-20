@@ -56,6 +56,8 @@ router.post(
 
       const jwtToken = jwt.sign({ uid, email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+      const { complycubeClientId } = req.body;
+
       await db.collection('users').doc(uid).set({
         uid,
         bids: [],
@@ -66,6 +68,8 @@ router.post(
         creationTime,
         emailVerified: userRecord.emailVerified || false,
         lastSignInTime,
+        ...(complycubeClientId ? { complycubeClientId } : {}),
+        kycStatus: complycubeClientId ? 'pending' : 'unverified',
       });
 
       res.status(201).json({

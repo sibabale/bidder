@@ -24,12 +24,22 @@ const identityCheck = require('./src/routes/kyc/identityCheck');
 const getOneProduct = require('./src/routes/products/getOne');
 const getAllProducts = require('./src/routes/products/getAll');
 const generateKYCToken = require('./src/routes/kyc/generateToken');
+const complycubeWebhook = require('./src/routes/kyc/verifyEvent');
 const cronProductStatus = require('./src/routes/internal/cronProductStatus');
+const health = require('./src/routes/health');
 
 const app = express();
 const server = http.createServer(app);
 
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      if (buf?.length) {
+        req.rawBody = buf;
+      }
+    },
+  })
+);
 app.use(morgan);
 app.use(corsMiddleware);
 app.use(helmetMiddleware);
@@ -42,6 +52,8 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.send('Welcome to the API!');
 });
+
+app.use('/health', health);
 
 app.use('/api/bids', createBid);
 app.use('/api/products', createProduct);
@@ -56,6 +68,7 @@ app.use('/api/register/verify', verify);
 app.use('/api/get-token', getToken);
 app.use('/api/identity-check', identityCheck);
 app.use('/api/generate-kyc-token', generateKYCToken);
+app.use('/api/kyc/webhook', complycubeWebhook);
 
 app.use('/api/internal/cron', cronProductStatus);
 

@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Images are uploaded from the client during auction creation.
+// TODO: move uploads behind Firebase Auth or a signed server URL.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /images/{fileName} {
+      allow read: if true;
+      allow write: if request.resource != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
