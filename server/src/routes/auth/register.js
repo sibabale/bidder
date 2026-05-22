@@ -1,18 +1,12 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const express = require('express');
-const { rateLimit } = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const { registerLimiter } = require('../../middleware/rateLimits');
 const admin = require('../../config/firebase-admin');
 
 const db = admin.firestore();
 const router = express.Router();
-
-const registerLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: 'Too many registrations from this IP, please try again later.',
-});
 
 const isValidPassword = (password) => {
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;

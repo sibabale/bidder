@@ -1,69 +1,90 @@
 const express = require('express');
-const validator = require('validator');
-const { rateLimit } = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const admin = require('../../config/firebase-admin');
 const { publishBid } = require('../../lib/ably');
 const { parseBidAmount } = require('../../lib/parseBidAmount');
+const { sendError, sendValidationErrors } = require('../../lib/apiResponse');
+const { logError } = require('../../lib/logger');
+const { captureError } = require('../../lib/monitoring');
 const { BLOCKED_BID_STATUSES } = require('../../constants/productStatus');
+const { bidLimiter } = require('../../middleware/rateLimits');
+const verifyToken = require('../../middleware/auth/verifyToken');
 
 const db = admin.firestore();
 const FieldValue = admin.firestore.FieldValue;
 const router = express.Router();
-const verifyToken = require('../../middleware/auth/verifyToken');
 
-const bidLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-});
-
-router.post('/', bidLimiter, verifyToken, async (req, res) => {
-  try {
-    const { userId, amount: rawAmount, productId } = req.body;
-
-    if (!productId || rawAmount === undefined || rawAmount === null) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-    if (!validator.isLength(productId, { min: 1 }) || !validator.isLength(userId, { min: 1 })) {
-      return res.status(400).json({ message: 'Invalid product or user ID format' });
-    }
-    if (userId !== req.auth.uid) {
-      return res.status(403).json({ message: 'User ID does not match authenticated user' });
+router.post(
+  '/',
+  bidLimiter,
+  verifyToken,
+  [
+    body('productId').notEmpty().withMessage('productId is required'),
+    body('userId').notEmpty().withMessage('userId is required'),
+    body('amount')
+      .custom((value) => parseBidAmount(value) !== null)
+      .withMessage('amount must be a positive number'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendValidationErrors(res, errors);
     }
 
-    const amount = parseBidAmount(rawAmount);
-    if (amount === null) {
-      return res.status(400).json({ message: 'Amount must be a positive number' });
-    }
+    try {
+      const { userId, amount: rawAmount, productId } = req.body;
 
-    const productRef = db.collection('products').doc(productId);
-    const bidRef = db.collection('bids').doc();
-    const bidTimestamp = new Date();
-
-    await db.runTransaction(async (transaction) => {
-      const productSnap = await transaction.get(productRef);
-      if (!productSnap.exists) {
-        throw Object.assign(new Error('Product not found'), { code: 'NOT_FOUND' });
+      if (userId !== req.auth.uid) {
+        return sendError(res, 403, 'FORBIDDEN', 'User ID does not match authenticated user');
       }
 
-      const productData = productSnap.data();
-      const now = new Date();
-      const startTime = new Date(productData.startTime);
-      const endTime = new Date(productData.endTime);
+      const amount = parseBidAmount(rawAmount);
+      const productRef = db.collection('products').doc(productId);
+      const bidRef = db.collection('bids').doc();
+      const bidTimestamp = new Date();
 
-      if (BLOCKED_BID_STATUSES.includes(productData.status) || now < startTime || now > endTime) {
-        throw Object.assign(new Error('Bidding is not allowed.'), { code: 'BID_CLOSED' });
-      }
+      await db.runTransaction(async (transaction) => {
+        const productSnap = await transaction.get(productRef);
+        if (!productSnap.exists) {
+          throw Object.assign(new Error('Product not found'), { code: 'NOT_FOUND' });
+        }
 
-      if (amount <= productData.startPrice) {
-        throw Object.assign(new Error('Bid must exceed the starting price.'), { code: 'BID_LOW' });
-      }
+        const productData = productSnap.data();
+        const now = new Date();
+        const startTime = new Date(productData.startTime);
+        const endTime = new Date(productData.endTime);
 
-      const currentHighestBid = productData.highestBid || productData.startPrice;
-      if (amount <= currentHighestBid) {
-        throw Object.assign(new Error('Bid must exceed the current highest bid.'), { code: 'BID_NOT_HIGHEST' });
-      }
+        if (BLOCKED_BID_STATUSES.includes(productData.status) || now < startTime || now > endTime) {
+          throw Object.assign(new Error('Bidding is not allowed.'), { code: 'BID_CLOSED' });
+        }
 
-      const bidRecord = {
+        if (amount <= productData.startPrice) {
+          throw Object.assign(new Error('Bid must exceed the starting price.'), { code: 'BID_LOW' });
+        }
+
+        const currentHighestBid = productData.highestBid || productData.startPrice;
+        if (amount <= currentHighestBid) {
+          throw Object.assign(new Error('Bid must exceed the current highest bid.'), {
+            code: 'BID_NOT_HIGHEST',
+          });
+        }
+
+        const bidRecord = {
+          bidId: bidRef.id,
+          productId,
+          userId,
+          amount,
+          timestamp: bidTimestamp,
+        };
+
+        transaction.set(bidRef, bidRecord);
+        transaction.update(productRef, {
+          bids: FieldValue.arrayUnion(bidRef.id),
+          highestBid: amount,
+        });
+      });
+
+      const newBid = {
         bidId: bidRef.id,
         productId,
         userId,
@@ -71,50 +92,40 @@ router.post('/', bidLimiter, verifyToken, async (req, res) => {
         timestamp: bidTimestamp,
       };
 
-      transaction.set(bidRef, bidRecord);
-      transaction.update(productRef, {
-        bids: FieldValue.arrayUnion(bidRef.id),
-        highestBid: amount,
-      });
-    });
+      try {
+        await publishBid(productId, newBid);
+      } catch (publishError) {
+        logError(req, 'Failed to publish bid to Ably', publishError, { productId });
+        captureError(publishError, { productId, requestId: req.id });
+        return res.status(503).json({
+          code: 'BROADCAST_FAILED',
+          message: 'Bid saved but live update failed. Refresh to see the latest state.',
+          bid: newBid,
+          broadcast: false,
+        });
+      }
 
-    const newBid = {
-      bidId: bidRef.id,
-      productId,
-      userId,
-      amount,
-      timestamp: bidTimestamp,
-    };
-
-    try {
-      await publishBid(productId, newBid);
-    } catch (publishError) {
-      console.error('Failed to publish bid to Ably:', publishError);
-      return res.status(503).json({
-        message: 'Bid saved but live update failed. Refresh to see the latest state.',
+      res.status(201).json({
+        code: 'BID_PLACED',
+        message: 'Bid placed successfully',
         bid: newBid,
-        broadcast: false,
+        broadcast: true,
       });
+    } catch (error) {
+      logError(req, 'Error placing bid', error);
+      if (error.code === 'NOT_FOUND') {
+        return sendError(res, 404, 'NOT_FOUND', 'Product not found');
+      }
+      if (error.code === 'BID_CLOSED') {
+        return sendError(res, 400, 'BID_CLOSED', 'Bidding is not allowed.');
+      }
+      if (error.code === 'BID_LOW' || error.code === 'BID_NOT_HIGHEST') {
+        return sendError(res, 400, error.code, error.message);
+      }
+      captureError(error, { requestId: req.id, route: 'POST /api/bids' });
+      return sendError(res, 500, 'BID_FAILED', 'Failed to place bid');
     }
-
-    res.status(201).json({
-      message: 'Bid placed successfully',
-      bid: newBid,
-      broadcast: true,
-    });
-  } catch (error) {
-    console.error('Error placing bid:', error);
-    if (error.code === 'NOT_FOUND') {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    if (error.code === 'BID_CLOSED') {
-      return res.status(400).json({ message: 'Bidding is not allowed.' });
-    }
-    if (error.code === 'BID_LOW' || error.code === 'BID_NOT_HIGHEST') {
-      return res.status(400).json({ message: error.message });
-    }
-    res.status(500).json({ message: 'Failed to place bid' });
   }
-});
+);
 
 module.exports = router;

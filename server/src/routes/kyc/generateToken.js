@@ -4,9 +4,11 @@ const { storeKycSession } = require('../../lib/kycSession');
 
 require('dotenv').config();
 
+const { kycTokenLimiter } = require('../../middleware/rateLimits');
+
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', kycTokenLimiter, async (req, res) => {
   const { email, firstName, lastName } = req.body;
 
   if (!email || !firstName || !lastName) {

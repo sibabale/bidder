@@ -22,7 +22,8 @@ The project is organized into two main micro-services:
 
 - **Real-time Synchronization**: Instant bid updates and auction countdowns powered by Ably.
 - **Auction Lifecycle**: Automated opening and closing of auctions using scheduled cron jobs.
-- **Secure Payments & KYC**: Integration-ready for identity verification via ComplyCube.
+- **KYC (ComplyCube)**: Identity verification during registration.
+- **Payments**: Not implemented yet — planned for a future release.
 - **User Dashboard**: Comprehensive tracking of active bids, won items, and account history.
 
 ## Technical Stack
@@ -90,6 +91,18 @@ The project is organized into two main micro-services:
 ### Server
 - `npm run dev`: Starts the server with `nodemon` for automatic restarts.
 - `npm run start`: Starts the server using `node`.
+- `npm test`: Runs unit tests.
+
+## CI
+
+GitHub Actions runs on pushes and PRs to `develop` and `main`:
+- **server**: `npm test`
+- **client**: `npm run lint` and `npm run build`
+
+## Observability
+
+- Structured JSON logs with `X-Request-Id` on every request.
+- Optional [Sentry](https://sentry.io): set `SENTRY_DSN` in server env to enable error reporting.
 
 ## Firebase rules
 

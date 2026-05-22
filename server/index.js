@@ -1,14 +1,20 @@
 require('dotenv').config();
 
+const { initMonitoring, captureError } = require('./src/lib/monitoring');
+initMonitoring();
+
 require('./src/config/firebase-admin');
 require('./src/crons/products/updateStatus');
 
 const express = require('express');
 const http = require('http');
 
+const requestIdMiddleware = require('./src/middleware/requestId');
 const morgan = require('./src/middleware/morgan');
 const corsMiddleware = require('./src/middleware/cors');
 const helmetMiddleware = require('./src/middleware/helmet');
+const { sendError } = require('./src/lib/apiResponse');
+const { logError } = require('./src/lib/logger');
 
 const login = require('./src/routes/auth/login');
 const verify = require('./src/routes/auth/verify');
@@ -29,6 +35,7 @@ const uploadImage = require('./src/routes/upload/image');
 const app = express();
 const server = http.createServer(app);
 
+app.use(requestIdMiddleware);
 app.use(
   express.json({
     verify: (req, res, buf) => {
@@ -67,23 +74,33 @@ app.use('/api/kyc/webhook', complycubeWebhook);
 app.use('/api/internal/cron', cronProductStatus);
 
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  logError(req, 'Unhandled error', err);
+  captureError(err, { requestId: req.id, path: req.path });
   if (res.headersSent) {
     next(err);
     return;
   }
-  res.status(500).json({ message: 'Internal server error' });
+  sendError(res, 500, 'INTERNAL_ERROR', 'Internal server error');
 });
 
 process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled rejection:', reason);
+  const error = reason instanceof Error ? reason : new Error(String(reason));
+  logError(null, 'Unhandled rejection', error);
+  captureError(error, { source: 'unhandledRejection' });
 });
 
 const PORT = process.env.PORT || 4000;
 
 if (require.main === module) {
   server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(
+      JSON.stringify({
+        level: 'info',
+        message: 'Server started',
+        port: PORT,
+        timestamp: new Date().toISOString(),
+      })
+    );
   });
 }
 

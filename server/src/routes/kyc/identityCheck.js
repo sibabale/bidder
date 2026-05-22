@@ -1,15 +1,9 @@
 const express = require('express');
 const { ComplyCube } = require('@complycube/api');
-const { rateLimit } = require('express-rate-limit');
 const { getKycSession } = require('../../lib/kycSession');
+const { identityCheckLimiter } = require('../../middleware/rateLimits');
 
 const router = express.Router();
-
-const identityCheckLimiter = rateLimit({
-  windowMs: 20 * 60 * 1000,
-  max: 3,
-  message: 'Too many identity checks from this IP, please try again later.',
-});
 
 router.post('/', identityCheckLimiter, async (req, res) => {
   const { data, clientId } = req.body;

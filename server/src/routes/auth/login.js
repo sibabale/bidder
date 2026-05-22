@@ -4,12 +4,16 @@ const express = require('express');
 const { validationResult, body } = require('express-validator');
 const admin = require('../../config/firebase-admin');
 const { signInWithPassword } = require('../../lib/signInWithPassword');
+const { sendError, sendValidationErrors } = require('../../lib/apiResponse');
+const { logError } = require('../../lib/logger');
+const { authLimiter } = require('../../middleware/rateLimits');
 
 const db = admin.firestore();
 const router = express.Router();
 
 router.post(
   '/',
+  authLimiter,
   [
     body('email').isEmail().withMessage('Please provide a valid email address.'),
     body('password').notEmpty().withMessage('Password is required.'),
@@ -17,7 +21,7 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return sendValidationErrors(res, errors);
     }
 
     const { email, password } = req.body;
@@ -28,7 +32,7 @@ router.post(
       const userDoc = await db.collection('users').doc(localId).get();
 
       if (!userDoc.exists) {
-        return res.status(404).json({ message: 'User not found in the database.' });
+        return sendError(res, 404, 'USER_NOT_FOUND', 'User not found in the database.');
       }
 
       const userData = userDoc.data();
@@ -40,6 +44,7 @@ router.post(
       );
 
       res.status(200).json({
+        code: 'LOGIN_OK',
         message: 'Login successful',
         user: {
           email: userData.email,
@@ -50,23 +55,23 @@ router.post(
         jwtToken,
       });
     } catch (error) {
-      console.error('Error logging in user:', error);
+      logError(req, 'Error logging in user', error);
       if (error.code === 'auth/wrong-password') {
-        return res.status(401).json({ message: 'Invalid password. Please try again.' });
+        return sendError(res, 401, 'INVALID_CREDENTIALS', 'Invalid password. Please try again.');
       }
       if (error.code === 'auth/user-not-found') {
-        return res.status(404).json({ message: 'No user found with this email.' });
+        return sendError(res, 404, 'USER_NOT_FOUND', 'No user found with this email.');
       }
       if (error.code === 'auth/invalid-credential') {
-        return res.status(404).json({ message: 'Invalid email or password.' });
+        return sendError(res, 404, 'INVALID_CREDENTIALS', 'Invalid email or password.');
       }
       if (error.code === 'auth/user-disabled') {
-        return res.status(403).json({ message: 'This account has been disabled.' });
+        return sendError(res, 403, 'USER_DISABLED', 'This account has been disabled.');
       }
       if (error.code === 'config') {
-        return res.status(500).json({ message: 'Server authentication is misconfigured.' });
+        return sendError(res, 500, 'AUTH_MISCONFIGURED', 'Server authentication is misconfigured.');
       }
-      return res.status(500).json({ message: 'Failed to log in user', error: error.message });
+      return sendError(res, 500, 'LOGIN_FAILED', 'Failed to log in user');
     }
   }
 );

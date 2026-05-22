@@ -3,6 +3,7 @@ const express = require('express');
 const multer = require('multer');
 const admin = require('../../config/firebase-admin');
 const verifyToken = require('../../middleware/auth/verifyToken');
+const { uploadLimiter } = require('../../middleware/rateLimits');
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ function getStorageBucket() {
   return admin.storage().bucket(bucketName);
 }
 
-router.post('/', verifyToken, (req, res, next) => {
+router.post('/', uploadLimiter, verifyToken, (req, res, next) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
       return res.status(400).json({ message: err.message });

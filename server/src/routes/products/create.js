@@ -7,6 +7,7 @@ const { PRODUCT_STATUS } = require('../../constants/productStatus');
 const db = admin.firestore();
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
+const { productCreateLimiter } = require('../../middleware/rateLimits');
 
 const booleanOrEmpty = (value) => {
   if (value === '' || typeof value === 'boolean') {
@@ -17,6 +18,7 @@ const booleanOrEmpty = (value) => {
 
 router.post(
   '/',
+  productCreateLimiter,
   verifyToken,
   [
     body('image').isURL().withMessage('Image must be a valid URL'),
