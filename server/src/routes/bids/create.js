@@ -4,7 +4,7 @@ const admin = require('../../config/firebase-admin');
 const { publishBid } = require('../../lib/ably');
 const { parseBidAmount } = require('../../lib/parseBidAmount');
 const { sendError, sendValidationErrors } = require('../../lib/apiResponse');
-const { logError } = require('../../lib/logger');
+const { logError, logStep } = require('../../lib/logger');
 const { captureError } = require('../../lib/monitoring');
 const { BLOCKED_BID_STATUSES } = require('../../constants/productStatus');
 const { bidLimiter } = require('../../middleware/rateLimits');
@@ -33,6 +33,7 @@ router.post(
 
     try {
       const { userId, amount: rawAmount, productId } = req.body;
+      logStep(req, 'bids/create', 'starting bid placement...', { userId, productId, amount: rawAmount });
 
       if (userId !== req.auth.uid) {
         return sendError(res, 403, 'FORBIDDEN', 'User ID does not match authenticated user');
@@ -43,6 +44,7 @@ router.post(
       const bidRef = db.collection('bids').doc();
       const bidTimestamp = new Date();
 
+      logStep(req, 'bids/create', 'running transaction...', { productId });
       await db.runTransaction(async (transaction) => {
         const productSnap = await transaction.get(productRef);
         if (!productSnap.exists) {
@@ -105,6 +107,7 @@ router.post(
         });
       }
 
+      logStep(req, 'bids/create', 'bid placed successfully...', { bidId: bidRef.id, productId, userId, amount });
       res.status(201).json({
         code: 'BID_PLACED',
         message: 'Bid placed successfully',

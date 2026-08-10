@@ -5,7 +5,7 @@ const { validationResult, body } = require('express-validator');
 const admin = require('../../config/firebase-admin');
 const { signInWithPassword } = require('../../lib/signInWithPassword');
 const { sendError, sendValidationErrors } = require('../../lib/apiResponse');
-const { logError } = require('../../lib/logger');
+const { logError, logStep } = require('../../lib/logger');
 const { authLimiter } = require('../../middleware/rateLimits');
 
 const db = admin.firestore();
@@ -25,17 +25,21 @@ router.post(
     }
 
     const { email, password } = req.body;
+    logStep(req, 'login', 'starting login...', { email });
 
     try {
       const { localId } = await signInWithPassword(email, password);
+      logStep(req, 'login', 'firebase auth successful...', { email, uid: localId });
 
       const userDoc = await db.collection('users').doc(localId).get();
 
       if (!userDoc.exists) {
+        logStep(req, 'login', 'user not found in firestore...', { email, uid: localId });
         return sendError(res, 404, 'USER_NOT_FOUND', 'User not found in the database.');
       }
 
       const userData = userDoc.data();
+      logStep(req, 'login', 'user found in firestore...', { email, uid: localId });
 
       const jwtToken = jwt.sign(
         { uid: localId, email: userData.email || email },
@@ -54,6 +58,7 @@ router.post(
         },
         jwtToken,
       });
+      logStep(req, 'login', 'login successful...', { email, uid: localId });
     } catch (error) {
       logError(req, 'Error logging in user', error);
       if (error.code === 'auth/wrong-password') {

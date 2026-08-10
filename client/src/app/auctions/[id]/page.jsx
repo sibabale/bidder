@@ -35,7 +35,7 @@ export default function DetailsPage({ params }) {
     const fetchProductDetails = useCallback(
         async (productId) => {
             const token = getAuthToken()
-            const response = await fetch(`${publicEnv.apiUrl}/products/${productId}`, {
+            const response = await fetch(`${publicEnv.apiUrl}/api/products/${productId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ export default function DetailsPage({ params }) {
         }
 
         try {
-            const response = await fetch(`${publicEnv.apiUrl}/bids`, {
+            const response = await fetch(`${publicEnv.apiUrl}/api/bids`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -60,7 +60,7 @@ const SignUpPage = () => {
 
     const { mutate: verifyMutate, isPending: isVerifying } = useMutation({
         mutationFn: async (values) => {
-            return axios.post(`${BASE_URL}/register/verify`, values)
+            return axios.post(`${BASE_URL}/api/register/verify`, values)
         },
         onSuccess: async (_, values) => {
             await startVerification(values)
@@ -74,7 +74,7 @@ const SignUpPage = () => {
         useMutation({
             mutationFn: (values) => {
                 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
-                return axios.post(`${BASE_URL}/register`, values)
+                return axios.post(`${BASE_URL}/api/register`, values)
             },
             onSuccess: async (user) => {
                 localStorage.setItem('biddar', user.data.jwtToken)
@@ -134,7 +134,7 @@ const SignUpPage = () => {
         if (window.ComplyCube) {
             try {
                 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
-                const response = await fetch(`${BASE_URL}/generate-kyc-token`, {
+                const response = await fetch(`${BASE_URL}/api/generate-kyc-token`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -353,7 +353,7 @@ const SignUpPage = () => {
                         <p className="meta_text">
                             Already have an account?
                             <Link
-                                href="/auth/login"
+                                href="/auth/api/login"
                                 className="ml-2 text-bidder-primary"
                             >
                                 Login

@@ -39,7 +39,7 @@ const SignInPage = () => {
     const { error, mutate, isPending } = useMutation({
         mutationFn: async (values) => {
             const BASE_URL = process.env.NEXT_PUBLIC_API_URL
-            const response = await axios.post(`${BASE_URL}/login`, values)
+            const response = await axios.post(`${BASE_URL}/api/login`, values)
 
             localStorage.setItem('biddar', response.data.jwtToken)
             return response.data.user
@@ -169,7 +169,7 @@ const SignInPage = () => {
                         <p>
                             Don’t have an account?
                             <Link
-                                href="/auth/register"
+                                href="/auth/api/register"
                                 className="ml-2 text-bidder-primary"
                             >
                                 Register

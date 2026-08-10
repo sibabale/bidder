@@ -4,6 +4,8 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { registerLimiter } = require('../../middleware/rateLimits');
 const admin = require('../../config/firebase-admin');
+const { sendError } = require('../../lib/apiResponse');
+const { logError, logStep } = require('../../lib/logger');
 
 const db = admin.firestore();
 const router = express.Router();
@@ -36,6 +38,7 @@ router.post(
     }
 
     const { email, password, firstName, lastName } = req.body;
+    logStep(req, 'register', 'starting registration...', { email });
 
     try {
       const userRecord = await admin.auth().createUser({
@@ -43,6 +46,7 @@ router.post(
         password,
         displayName: `${firstName} ${lastName}`.trim(),
       });
+      logStep(req, 'register', 'firebase auth user created...', { email, uid: userRecord.uid });
 
       const { uid, metadata } = userRecord;
       const creationTime = metadata.creationTime;
@@ -65,24 +69,23 @@ router.post(
         ...(complycubeClientId ? { complycubeClientId } : {}),
         kycStatus: complycubeClientId ? 'verified' : 'unverified',
       });
+      logStep(req, 'register', 'user saved to firestore...', { email, uid });
 
       res.status(201).json({
         message: 'User registered successfully',
         userId: uid,
         jwtToken,
       });
+      logStep(req, 'register', 'registration successful...', { email, uid });
     } catch (error) {
-      console.error('Error registering user:', error);
+      logError(req, 'Error registering user', error, { email });
       if (error.code === 'auth/email-already-exists') {
-        return res.status(400).json({ message: 'An account with this email already exists.' });
+        return sendError(res, 400, 'EMAIL_EXISTS', 'An account with this email already exists.');
       }
       if (error.code === 'auth/invalid-password') {
-        return res.status(400).json({ message: 'Password does not meet Firebase requirements.' });
+        return sendError(res, 400, 'INVALID_PASSWORD', 'Password does not meet Firebase requirements.');
       }
-      res.status(500).json({
-        message: 'Failed to register user',
-        error: error.message,
-      });
+      return sendError(res, 500, 'REGISTER_FAILED', 'Failed to register user');
     }
   }
 );

@@ -1,5 +1,5 @@
 const PRODUCT_STATUS = {
-  COMING_SOON: 'coming_soon',
+  COMING_SOON: 'coming soon',
   LIVE: 'live',
   CLOSED: 'closed',
   CANCELLED: 'cancelled',
