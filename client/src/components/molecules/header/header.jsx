@@ -22,7 +22,7 @@ export default function Header() {
         mutationFn: async () => {
             const BASE_URL = process.env.NEXT_PUBLIC_API_URL
             await axios.post(
-                `${BASE_URL}/logout`,
+                `${BASE_URL}/api/logout`,
                 {},
                 {
                     headers: {

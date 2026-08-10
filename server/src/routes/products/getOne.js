@@ -4,6 +4,7 @@ const admin = require('../../config/firebase-admin');
 const db = admin.firestore();
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
+const { logError, logStep } = require('../../lib/logger');
 
 router.get('/:productId', verifyToken, async (req, res) => {
   const { productId } = req.params;

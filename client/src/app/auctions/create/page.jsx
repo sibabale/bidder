@@ -149,7 +149,7 @@ const CreateAuctionPage = () => {
         const formData = new FormData()
         formData.append('image', file)
 
-        const response = await fetch(`${publicEnv.apiUrl}/upload/image`, {
+        const response = await fetch(`${publicEnv.apiUrl}/api/upload/image`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -181,7 +181,7 @@ const CreateAuctionPage = () => {
 
             const imageUrl = await handleUploadImage(values.image, token)
 
-            const repsonse = await fetch(`${publicEnv.apiUrl}/products`, {
+            const repsonse = await fetch(`${publicEnv.apiUrl}/api/products`, {
                 method: 'POST',
                 body: JSON.stringify({
                     title: values.title,

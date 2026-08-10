@@ -33,8 +33,18 @@ function logError(req, message, error, meta = {}) {
   });
 }
 
+function logStep(req, module, action, meta = {}) {
+  log('info', `[${module}] ${action}`, {
+    requestId: req?.id,
+    method: req?.method,
+    path: req?.path,
+    ...meta,
+  });
+}
+
 module.exports = {
   log,
   logRequest,
   logError,
+  logStep,
 };

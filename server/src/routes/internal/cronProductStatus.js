@@ -1,5 +1,6 @@
 const express = require('express');
 const { updateProductStatuses } = require('../../jobs/updateProductStatuses');
+const { log, logError } = require('../../lib/logger');
 
 const router = express.Router();
 
@@ -15,10 +16,12 @@ router.get('/update-product-statuses', async (req, res) => {
   }
 
   try {
+    log('info', '[cron/updateProductStatuses] vercel cron triggered...');
     await updateProductStatuses();
+    log('info', '[cron/updateProductStatuses] vercel cron complete...');
     return res.status(200).json({ ok: true });
   } catch (error) {
-    console.error('Cron updateProductStatuses failed:', error);
+    logError(undefined, 'Cron updateProductStatuses failed', error);
     return res.status(500).json({ message: 'Cron job failed' });
   }
 });

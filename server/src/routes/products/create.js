@@ -8,6 +8,7 @@ const db = admin.firestore();
 const router = express.Router();
 const verifyToken = require('../../middleware/auth/verifyToken');
 const { productCreateLimiter } = require('../../middleware/rateLimits');
+const { logError, logStep } = require('../../lib/logger');
 
 const booleanOrEmpty = (value) => {
   if (value === '' || typeof value === 'boolean') {

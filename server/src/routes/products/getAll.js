@@ -3,6 +3,7 @@ const admin = require('../../config/firebase-admin');
 
 const db = admin.firestore();
 const verifyToken = require('../../middleware/auth/verifyToken');
+const { logError, logStep } = require('../../lib/logger');
 
 const router = express.Router();
 

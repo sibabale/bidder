@@ -35,7 +35,23 @@ function loadCredential() {
   }
 
   if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-    return admin.credential.cert(parseServiceAccountJson(process.env.FIREBASE_SERVICE_ACCOUNT_JSON));
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON.trim();
+    // Support legacy local usage: value is a file path, not inline JSON
+    if (!raw.startsWith('{')) {
+      const absolutePath = path.resolve(process.cwd(), raw);
+      try {
+        const fileContents = fs.readFileSync(absolutePath, 'utf8');
+        return admin.credential.cert(parseServiceAccountJson(fileContents));
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          throw new Error(
+            `Firebase service account file not found at ${absolutePath}. Check FIREBASE_SERVICE_ACCOUNT_JSON.`
+          );
+        }
+        throw new Error(`Failed to read Firebase service account: ${error.message}`);
+      }
+    }
+    return admin.credential.cert(parseServiceAccountJson(raw));
   }
 
   if (

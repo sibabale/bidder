@@ -3,7 +3,7 @@
  * Requires FIREBASE_WEB_API_KEY (same Web API key as the Firebase client app).
  */
 async function signInWithPassword(email, password) {
-  const apiKey = process.env.FIREBASE_WEB_API_KEY;
+  const apiKey = process.env.FIREBASE_WEB_API_KEY || process.env.FIREBASE_API_KEY;
   if (!apiKey) {
     const err = new Error('FIREBASE_WEB_API_KEY is not configured');
     err.code = 'config';
